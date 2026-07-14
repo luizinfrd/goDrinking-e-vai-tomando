@@ -1,0 +1,24 @@
+# variaveis de ambiente
+**/.env
+**/.env.local
+**/.env.production
+
+# dependencias do node
+**/node_modules/
+
+# build
+**/build/
+**/dist/
+
+# logs
+**/*.log
+**/logs/
+
+# sistema operacional
+.DS_Store
+Thumbs.db
+
+# editor
+.idea/
+.vscode/
+
