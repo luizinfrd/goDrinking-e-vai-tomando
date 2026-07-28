@@ -22,3 +22,11 @@ Thumbs.db
 .idea/
 .vscode/
 
+
+/generated/prisma
+
+# ferramentas de IA
+.windsurf/
+.claude/
+.agents/
+skills-lock.json

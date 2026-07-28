@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String          @id @default(uuid())
+  nome        String
+  email       String          @unique
+  senha       String
+  dataCriacao DateTime        @default(now())
+  preferences UserPreference?
+  avaliacoes  Avaliacao[]
+
+  @@map("users") //mantém os nomes das tabelas em português no banco
+}
+
+model UserPreference {
+  userId       String  @id
+  pesoDoce     Float   @default(0)
+  pesoSeco     Float   @default(0)
+  pesoCitrico  Float   @default(0)
+  pesoEncorpado Float  @default(0)
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model Bebida {
+  id               String          @id @default(uuid())
+  nome             String
+  tipo             String
+  atributoDoce     Float           @default(0)
+  atributoSeco     Float           @default(0)
+  atributoCitrico  Float           @default(0)
+  atributoEncorpado Float          @default(0)
+  notaMedia        Float           @default(0)
+  criadoUser       Boolean         @default(false)
+  // campos exclusivos de vinho (null se for drink)
+  tipoVinho        String?
+  uva              String?
+  paisOrigem       String?
+  // campos exclusivos de drink (null se for vinho)
+  ingredientes     String?
+  baseAlcoolica    String?
+  avaliacoes       Avaliacao[]
+  locais           BebidaLocal[]
+
+  @@map("bebidas")
+}
+
+model Avaliacao {
+  id        String   @id @default(uuid())
+  userId    String
+  bebidaId  String
+  nota      Int
+  comentario String?
+  data      DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bebida    Bebida   @relation(fields: [bebidaId], references: [id], onDelete: Cascade)
+
+  @@map("avaliacoes")
+}
+
+model Local {
+  id       String        @id @default(uuid())
+  nome     String
+  endereco String?
+  bebidas  BebidaLocal[]
+
+  @@map("locais")
+}
+
+model BebidaLocal {
+  localId  String
+  bebidaId String
+  local    Local  @relation(fields: [localId], references: [id], onDelete: Cascade)
+  bebida   Bebida @relation(fields: [bebidaId], references: [id], onDelete: Cascade)
+
+  @@id([localId, bebidaId])
+  @@map("bebidas_locais")
+}
