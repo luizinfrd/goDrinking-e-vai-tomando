@@ -4,6 +4,7 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import bebidaRoutes from './routes/bebidaRoutes';
 import avaliacaoRoutes from './routes/avaliacaoRoutes';
+import recomendacaoRoutes from './routes/recomendacaoRoutes';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/bebidas', bebidaRoutes);
 app.use('/api/avaliacoes', avaliacaoRoutes);
+app.use('/api/recomendacoes', recomendacaoRoutes);
 
 app.get('/health', (req, res) => {
     res.json({status: 'ok', message: 'servidor rodando!'});
