@@ -1,22 +1,39 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma } from '@prisma/client';
+import { prisma } from '../lib/prisma';
+import { erros } from '../utils/erros';
 
-const prisma = new PrismaClient();
+export { isErroDeValidacao } from '../utils/erros';
 
-function isErroDeValidacao(msg: string): boolean{
-    return msg.startsWith('[validacao]');
-}
+export type DadosBebida = {
+    nome?: string;
+    tipo?: string;
+    descricao?: string | null;
+    imagemUrl?: string | null;
+    atributoDoce?: number;
+    atributoSeco?: number;
+    atributoCitrico?: number;
+    atributoEncorpado?: number;
+    criadoUser?: boolean;
 
-export {isErroDeValidacao};
+    tipoVinho?: string | null;
+    uva?: string | null;
+    paisOrigem?: string | null;
+
+    ingredientes?: string | null;
+    baseAlcoolica?: string | null;
+};
 
 export const bebidaService = {
     async listar(tipo?: string, nome?: string){
         return prisma.bebida.findMany({
             where: {
-                ...(tipo && { tipo: { equals: tipo, mode: 'insensitive'}}),
-                ...(nome && { nome: { equals: nome, mode: 'insensitive'}}),
+                ...(tipo && { tipo: { equals: tipo.toLowerCase(), mode: 'insensitive'}}),
+                // busca parcial: "negr" encontra "Negroni"
+                ...(nome && { nome: { contains: nome, mode: 'insensitive'}}),
             },
 
-            orderBy: {notaMedia: 'desc'},
+            include: { _count: { select: { avaliacoes: true } } },
+            orderBy: [{notaMedia: 'desc'}, {nome: 'asc'}],
         });
     },
 
@@ -27,76 +44,57 @@ export const bebidaService = {
                 avaliacoes: {
                     orderBy: { data: 'desc'},
                     take: 10, //limita os resultados em 10 registros
+                    include: { user: { select: { id: true, nome: true } } },
                 },
+                locais: {
+                    include: { local: true },
+                },
+                _count: { select: { avaliacoes: true } },
             },
         });
 
         if (!bebida) {
-            throw new Error('[validacao] Bebida não encontrada');
+            throw erros.naoEncontrado('Bebida não encontrada');
         }
 
         return bebida;
     },
 
-    async criar(dados: {
-        nome: string;
-        tipo: string;
-        atributoDoce?: number;
-        atributoSeco?: number; 
-        atributoCitrico?: number;
-        atributoEncorpado?: number; 
-        criadoUser?: boolean;
-
-        tipoVinho?: string;
-        uva?: string;
-        paisOrigem?: string;
-
-        ingredientes?: string;
-        baseAlcoolica?: string;
-    }) {
+    async criar(dados: DadosBebida & { nome: string; tipo: string }) {
         const tipo = dados.tipo.toLowerCase();
 
+        if (tipo !== 'vinho' && tipo !== 'drink'){
+            throw erros.validacao('Tipo deve ser "vinho" ou "drink"');
+        }
+
         if (tipo === 'vinho' && !dados.tipoVinho){
-            throw new Error('[validacao] Campo tipoVinho é obrigatório para vinhos');
+            throw erros.validacao('Campo tipoVinho é obrigatório para vinhos');
         }
 
         if (tipo === 'drink' && !dados.baseAlcoolica){
-            throw new Error('[validacao] Campo baseAlcoolica é obrigatório para drinks');
+            throw erros.validacao('Campo baseAlcoolica é obrigatório para drinks');
         }
 
-        if (tipo !== 'vinho' && tipo !== 'drink'){
-            throw new Error('[validacao] Tipo deve ser "vinho" ou "drink"');
-        }
-
-        return prisma.bebida.create({ data: dados });
+        return prisma.bebida.create({ data: { ...dados, tipo } as Prisma.BebidaCreateInput });
     },
 
-    async atualizar(id:  string, dados: {
-        nome?: string;
-        atributoDoce?: number;
-        atributoSeco?: number;
-        atributoCitrico?: number;
-        atributoEncorpado?: number;
-        tipoVinho?: string;
-        uva?: string;
-        paisOrigem?: string;
-        ingredientes?: string;
-        baseAlcoolica?: string;
-    }) {
+    async atualizar(id:  string, dados: DadosBebida) {
         const bebida = await prisma.bebida.findUnique({ where: { id } });
 
         if(!bebida) {
-            throw new Error('[validacao] Bebida não encontrada');
+            throw erros.naoEncontrado('Bebida não encontrada');
         }
 
-        return prisma.bebida.update({ where: { id }, data: dados });
+        // o tipo não muda depois de criado (os campos específicos dependem dele)
+        const { tipo, ...resto } = dados;
+        return prisma.bebida.update({ where: { id }, data: resto as Prisma.BebidaUpdateInput });
     },
 
     async deletar(id: string) {
         const bebida = await prisma.bebida.findUnique({ where: { id }});
 
         if (!bebida) {
-            throw new Error('[validacao] Bebida não encontrada');
+            throw erros.naoEncontrado('Bebida não encontrada');
         }
 
         return prisma.bebida.delete({ where: { id }});

@@ -1,13 +1,11 @@
 // lógica de negócio (hash, comparar senha, gerar token)
 
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import jwt, { SignOptions } from 'jsonwebtoken';
+import { prisma } from '../lib/prisma';
+import { getJwtExpiresIn, getJwtSecret } from '../utils/jwt';
 
-const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
-const JWT_SECRET = process.env.JWT_SECRET as string;
-const JWT_EXPIRES_IN = '1h';
 
 export const authService = {
     async register(nome: string, email: string, senha: string){
@@ -20,7 +18,7 @@ export const authService = {
         // gera o hash da senha
         const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
 
-        //cria o usuário e suas preferências
+        //cria o usuário e suas preferências (zeradas até o onboarding)
         const user = await prisma.user.create({
             data: {
                 nome,
@@ -59,8 +57,8 @@ export const authService = {
         // token jwt
         const token = jwt.sign(
             { id: user.id, email: user.email },
-            JWT_SECRET,
-            { expiresIn: JWT_EXPIRES_IN }
+            getJwtSecret(),
+            { expiresIn: getJwtExpiresIn() as SignOptions['expiresIn'] }
         );
 
         return {
