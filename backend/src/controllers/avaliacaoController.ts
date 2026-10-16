@@ -1,14 +1,15 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { avaliacaoService, isErroDeValidacao } from '../services/avaliacaoService';
+import { avaliacaoService } from '../services/avaliacaoService';
+import { responderErro } from '../utils/erros';
 
 export const avaliacaoController = {
   async criar(req: AuthRequest, res: Response) {
     try {
       const userId = req.user!.id;
-      const { bebidaId, nota, comentario } = req.body;
+      const { bebidaId, nota, comentario } = req.body ?? {};
 
-      if (!bebidaId || !nota) {
+      if (!bebidaId || nota === undefined || nota === null) {
         res.status(400).json({ error: 'bebidaId e nota são obrigatórios' });
         return;
       }
@@ -20,12 +21,25 @@ export const avaliacaoController = {
       });
 
       res.status(201).json(avaliacao);
-    } catch (error: any) {
-      if (isErroDeValidacao(error.message)) {
-        res.status(400).json({ error: error.message.replace('[validacao] ', '') });
-        return;
-      }
-      res.status(500).json({ error: 'Erro interno do servidor' });
+    } catch (error) {
+      responderErro(res, error);
+    }
+  },
+
+  async atualizar(req: AuthRequest, res: Response) {
+    try {
+      const id = req.params.id as string;
+      const userId = req.user!.id;
+      const { nota, comentario } = req.body ?? {};
+
+      const avaliacao = await avaliacaoService.atualizar(id, userId, {
+        ...(nota !== undefined && { nota: Number(nota) }),
+        ...(comentario !== undefined && { comentario }),
+      });
+
+      res.status(200).json(avaliacao);
+    } catch (error) {
+      responderErro(res, error);
     }
   },
 
@@ -35,7 +49,7 @@ export const avaliacaoController = {
       const avaliacoes = await avaliacaoService.listarPorBebida(id);
       res.status(200).json(avaliacoes);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      responderErro(res, error);
     }
   },
 
@@ -45,7 +59,7 @@ export const avaliacaoController = {
       const avaliacoes = await avaliacaoService.listarPorUsuario(userId);
       res.status(200).json(avaliacoes);
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      responderErro(res, error);
     }
   },
 
@@ -56,12 +70,8 @@ export const avaliacaoController = {
 
       await avaliacaoService.deletar(id, userId);
       res.status(204).send();
-    } catch (error: any) {
-      if (isErroDeValidacao(error.message)) {
-        res.status(400).json({ error: error.message.replace('[validacao] ', '') });
-        return;
-      }
-      res.status(500).json({ error: 'Erro interno do servidor' });
+    } catch (error) {
+      responderErro(res, error);
     }
   },
 };
