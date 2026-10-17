@@ -103,8 +103,11 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="relative min-h-dvh overflow-clip bg-obsidian">
-      <div className="pointer-events-none absolute -right-40 top-20 h-[520px] w-[520px] rounded-full bg-primary/5 blur-[140px]" />
+    <div className="relative min-h-dvh bg-obsidian">
+      {/* camada própria com overflow-hidden (overflow-clip não existe no Safari < 16); não envolve o rodapé sticky */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        <div className="absolute -right-40 top-20 h-[520px] w-[520px] rounded-full bg-primary/5 blur-[140px]" />
+      </div>
 
       <header className="flex h-16 items-center justify-between border-b border-surface-variant/10 px-5 pt-[env(safe-area-inset-top)] md:h-20 md:px-margin-desktop">
         <Logo />

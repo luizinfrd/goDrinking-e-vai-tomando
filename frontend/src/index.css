@@ -15,14 +15,45 @@
   src: url('/fonts/material-symbols-subset.woff2') format('woff2');
 }
 
+/* fontes de texto locais (subset latino do Google Fonts, cobre o português); variáveis em peso */
+@font-face {
+  font-family: 'Bodoni Moda';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fonts/bodoni-moda-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Bodoni Moda';
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fonts/bodoni-moda-italic-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/manrope-latin.woff2') format('woff2');
+}
+
 @layer base {
   html {
     color-scheme: dark;
+    /* impede o iOS de aumentar o texto sozinho ao girar o celular */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
+  /*
+   * rede de segurança: nada pode criar rolagem lateral no celular.
+   * só no body (não no html) para o overflow ir para a viewport e não quebrar o position: sticky.
+   */
   body {
     min-height: 100vh;
     min-height: 100dvh;
+    overflow-x: hidden;
   }
 
   /* foco visível padronizado para navegação por teclado */
@@ -116,9 +147,9 @@
   .input-line {
     @apply w-full border-0 border-b border-outline/70 bg-transparent px-0 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline/80 transition-colors duration-300 focus:border-primary focus:outline-none focus:ring-0 aria-[invalid=true]:border-error;
   }
-  /* campo de busca arredondado (catálogo e mapa) */
+  /* campo de busca arredondado (catálogo e mapa); 16px no celular para o iOS não dar zoom ao focar */
   .input-busca {
-    @apply w-full rounded-full border border-outline/50 bg-surface-container-low py-3 pl-12 pr-4 text-sm placeholder:text-outline focus:border-primary focus:outline-none focus:ring-0;
+    @apply w-full rounded-full border border-outline/50 bg-surface-container-low py-3 pl-12 pr-4 text-base placeholder:text-outline sm:text-sm focus:border-primary focus:outline-none focus:ring-0;
   }
   .field-label {
     @apply block font-label-sm text-label-sm uppercase tracking-widest text-outline transition-colors group-focus-within:text-primary;
