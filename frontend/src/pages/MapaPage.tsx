@@ -3,7 +3,7 @@ import L from 'leaflet';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import { Link } from 'react-router-dom';
-import { ErroBox, Icon, Spinner, TipoTag } from '../components/ui';
+import { ErroBox, Icon, LocalImagem, Spinner, TipoTag } from '../components/ui';
 import { useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
 import { capitalizar } from '../lib/sabor';
@@ -102,7 +102,8 @@ export default function MapaPage() {
 
   return (
     <div className="flex flex-col lg:h-screen lg:flex-row">
-      <div className="relative h-[60vh] flex-1 lg:h-full">
+      {/* no mobile a altura precisa ser fixa: flex-1 numa coluna sem altura definida zera o mapa */}
+      <div className="relative h-[55vh] h-[55dvh] flex-none lg:h-full lg:flex-1">
         <MapContainer center={CENTRO_PADRAO} zoom={13} className="h-full w-full" zoomControl={false}>
           {/* tiles padrão do OSM escurecidos via css (.tiles-escuros) para seguir o tema */}
           <TileLayer
@@ -124,6 +125,9 @@ export default function MapaPage() {
             >
               <Popup>
                 <div className="min-w-[200px] space-y-2">
+                  <div className="h-24 overflow-hidden rounded-lg">
+                    <LocalImagem local={l} />
+                  </div>
                   <p className="text-[10px] uppercase tracking-widest text-[#d48c45]">{l.tipo ?? 'local'}</p>
                   <p className="font-headline-md text-lg leading-tight text-[#ffb876]">{l.nome}</p>
                   {l.bebidas.length > 0 && (
@@ -206,14 +210,21 @@ export default function MapaPage() {
                       : 'border-transparent bg-surface-container-low hover:border-primary/20'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <h2 className={`font-headline-md text-[20px] leading-tight ${ativo ? 'text-primary' : ''}`}>{l.nome}</h2>
-                    {l.tipo && <TipoTag>{l.tipo}</TipoTag>}
+                  <div className="flex gap-4">
+                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl">
+                      <LocalImagem local={l} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <h2 className={`font-headline-md text-[20px] leading-tight ${ativo ? 'text-primary' : ''}`}>{l.nome}</h2>
+                        {l.tipo && <TipoTag>{l.tipo}</TipoTag>}
+                      </div>
+                      {l.descricao && <p className="mt-2 line-clamp-2 text-sm text-on-surface-variant">{l.descricao}</p>}
+                      <p className="mt-3 flex items-center gap-1 text-xs text-outline">
+                        <Icon name="local_bar" className="text-sm text-primary" /> {l.bebidas.length} bebidas
+                      </p>
+                    </div>
                   </div>
-                  {l.descricao && <p className="mt-2 line-clamp-2 text-sm text-on-surface-variant">{l.descricao}</p>}
-                  <p className="mt-3 flex items-center gap-1 text-xs text-outline">
-                    <Icon name="local_bar" className="text-sm text-primary" /> {l.bebidas.length} bebidas
-                  </p>
                 </button>
                 {ativo && (
                   <Link

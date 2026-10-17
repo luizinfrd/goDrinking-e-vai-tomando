@@ -1,7 +1,7 @@
 // dashboard: recomendações personalizadas "Beba X no Local Y" (RF22, RF25, RF26)
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { BebidaImagem, EstadoVazio, ErroBox, Icon, Spinner, TipoTag } from '../components/ui';
+import { BebidaImagem, EstadoVazio, ErroBox, Icon, LocalImagem, Spinner, TipoTag } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
 import { api, ApiError } from '../lib/api';
@@ -205,24 +205,29 @@ export default function RecomendacoesPage() {
             <span className="eyebrow">Onde ir</span>
             <h2 className="mt-3 font-display-lg text-headline-lg">Lugares que combinam com você</h2>
             <p className="mt-2 text-on-surface-variant">Estabelecimentos com mais bebidas compatíveis com o seu perfil.</p>
-            <div className="mt-8 grid gap-6 md:grid-cols-3">
+            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {locais.map((l) => (
                 <Link
                   key={l.id}
                   to={`/locais/${l.id}`}
-                  className="glass-card glass-card-hover flex flex-col gap-3 rounded-2xl p-6"
+                  className="glass-card glass-card-hover flex flex-col overflow-hidden rounded-2xl"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="relative h-40">
+                    <LocalImagem local={l} />
+                    <span className="absolute right-3 top-3 rounded-full bg-obsidian/80 backdrop-blur">
+                      <Compatibilidade score={l.scoreCompatibilidade} />
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-3 p-6">
                     <div>
                       <TipoTag>{l.tipo ?? 'Local'}</TipoTag>
                       <h3 className="mt-3 font-headline-md text-headline-md">{l.nome}</h3>
                     </div>
-                    <Compatibilidade score={l.scoreCompatibilidade} />
+                    {l.endereco && <p className="text-sm text-on-surface-variant">{l.endereco}</p>}
+                    <p className="text-sm text-outline">
+                      Para você: {l.bebidas.map((b) => b.bebida.nome).slice(0, 3).join(', ')}
+                    </p>
                   </div>
-                  {l.endereco && <p className="text-sm text-on-surface-variant">{l.endereco}</p>}
-                  <p className="text-sm text-outline">
-                    Para você: {l.bebidas.map((b) => b.bebida.nome).slice(0, 3).join(', ')}
-                  </p>
                 </Link>
               ))}
             </div>

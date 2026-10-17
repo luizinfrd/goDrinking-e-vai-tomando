@@ -1,7 +1,7 @@
 // detalhe do local com as bebidas disponíveis
 import { Link, useParams } from 'react-router-dom';
 import { BebidaCard } from '../components/BebidaCard';
-import { EstadoVazio, ErroBox, Icon, Spinner, TipoTag } from '../components/ui';
+import { EstadoVazio, ErroBox, Icon, LocalImagem, Spinner, TipoTag } from '../components/ui';
 import { useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
 import type { LocalComBebidas } from '../lib/types';
@@ -33,22 +33,28 @@ export default function LocalDetalhePage() {
         <Icon name="arrow_back" /> Mapa
       </Link>
 
-      <header className="glass-panel ambient-glow relative overflow-hidden rounded-3xl p-8 md:p-12">
+      <header className="glass-panel ambient-glow relative overflow-hidden rounded-3xl p-6 sm:p-8 md:p-12">
+        <div className="absolute inset-0">
+          <LocalImagem local={local} className="brightness-[0.4]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/60 to-transparent" />
+        </div>
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-primary/10 blur-[100px]" />
-        {local.tipo && <TipoTag>{local.tipo}</TipoTag>}
-        <h1 className="mt-4 font-display-lg text-headline-lg-mobile md:text-display-lg">{local.nome}</h1>
-        {local.descricao && <p className="mt-4 max-w-2xl font-body-lg text-body-lg text-on-surface-variant">{local.descricao}</p>}
-        <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-on-surface-variant">
-          {local.endereco && (
-            <span className="flex items-center gap-2">
-              <Icon name="location_on" className="text-primary" /> {local.endereco}
-            </span>
-          )}
-          {linkMapa && (
-            <a href={linkMapa} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary hover:underline">
-              <Icon name="near_me" /> Como chegar
-            </a>
-          )}
+        <div className="relative pt-24 md:pt-32">
+          {local.tipo && <TipoTag>{local.tipo}</TipoTag>}
+          <h1 className="mt-4 font-display-lg text-headline-lg-mobile md:text-display-lg">{local.nome}</h1>
+          {local.descricao && <p className="mt-4 max-w-2xl font-body-lg text-body-lg text-on-surface-variant">{local.descricao}</p>}
+          <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-on-surface-variant">
+            {local.endereco && (
+              <span className="flex items-center gap-2">
+                <Icon name="location_on" className="text-primary" /> {local.endereco}
+              </span>
+            )}
+            {linkMapa && (
+              <a href={linkMapa} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                <Icon name="near_me" /> Como chegar
+              </a>
+            )}
+          </div>
         </div>
       </header>
 

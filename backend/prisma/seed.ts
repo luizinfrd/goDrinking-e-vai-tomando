@@ -15,6 +15,42 @@ type BebidaSeed = {
   | { tipo: 'vinho'; tipoVinho: string; uva: string; paisOrigem: string }
 );
 
+// fotos servidas pelo front (frontend/public/img), créditos em frontend/public/img/CREDITOS.md
+const IMAGENS: Record<string, string> = {
+  'Caipirinha': '/img/bebidas/caipirinha.jpg',
+  'Negroni': '/img/bebidas/negroni.jpg',
+  'Mojito': '/img/bebidas/mojito.jpg',
+  'Old Fashioned': '/img/bebidas/old-fashioned.jpg',
+  'Aperol Spritz': '/img/bebidas/aperol-spritz.jpg',
+  'Margarita': '/img/bebidas/margarita.jpg',
+  'Moscow Mule': '/img/bebidas/moscow-mule.jpg',
+  'Espresso Martini': '/img/bebidas/espresso-martini.jpg',
+  'Gin Tônica': '/img/bebidas/gin-tonica.jpg',
+  'Piña Colada': '/img/bebidas/pina-colada.jpg',
+  'Whiskey Sour': '/img/bebidas/whiskey-sour.jpg',
+  'Cosmopolitan': '/img/bebidas/cosmopolitan.jpg',
+  'Malbec Mendoza': '/img/bebidas/malbec-mendoza.jpg',
+  'Cabernet Sauvignon Valle del Maipo': '/img/bebidas/cabernet-maipo.jpg',
+  'Carménère Reserva': '/img/bebidas/carmenere.jpg',
+  'Pinot Noir Bourgogne': '/img/bebidas/pinot-noir.jpg',
+  'Merlot Serra Gaúcha': '/img/bebidas/merlot-serra-gaucha.jpg',
+  'Tannat Canelones': '/img/bebidas/tannat.jpg',
+  'Sauvignon Blanc Marlborough': '/img/bebidas/sauvignon-blanc.jpg',
+  'Chardonnay Napa Valley': '/img/bebidas/chardonnay.jpg',
+  'Riesling Mosel': '/img/bebidas/riesling.jpg',
+  "Moscato d'Asti": '/img/bebidas/moscato.jpg',
+  'Espumante Brut Vale dos Vinhedos': '/img/bebidas/espumante-brut.jpg',
+  'Rosé Côtes de Provence': '/img/bebidas/rose-provence.jpg',
+  'Âmbar Speakeasy': '/img/locais/ambar-speakeasy.jpg',
+  'Rooftop Cambuí': '/img/locais/rooftop-cambui.jpg',
+  'Adega Taquaral': '/img/locais/adega-taquaral.jpg',
+  'Boteco do Barão': '/img/locais/boteco-do-barao.jpg',
+  'Enoteca Centro': '/img/locais/enoteca-centro.jpg',
+  'Largo do Rosário Bar': '/img/locais/largo-do-rosario-bar.jpg',
+  'Varanda Guanabara': '/img/locais/varanda-guanabara.jpg',
+  'Lagoa Lounge': '/img/locais/lagoa-lounge.jpg',
+};
+
 /*
  * critério dos atributos (0 a 1):
  * doce      → açúcar residual / xaropes / licores
@@ -230,6 +266,7 @@ async function upsertBebida(b: BebidaSeed) {
     nome: b.nome,
     tipo: b.tipo,
     descricao: b.descricao,
+    imagemUrl: IMAGENS[b.nome] ?? null,
     atributoDoce: b.sabor.doce,
     atributoSeco: b.sabor.seco,
     atributoCitrico: b.sabor.citrico,
@@ -256,7 +293,8 @@ async function main() {
   }
 
   console.log('semeando locais...');
-  for (const { bebidas, ...dadosLocal } of LOCAIS) {
+  for (const { bebidas, ...camposLocal } of LOCAIS) {
+    const dadosLocal = { ...camposLocal, imagemUrl: IMAGENS[camposLocal.nome] ?? null };
     const existente = await prisma.local.findFirst({ where: { nome: dadosLocal.nome } });
     const local = existente
       ? await prisma.local.update({ where: { id: existente.id }, data: dadosLocal })

@@ -1,6 +1,6 @@
 // componentes visuais pequenos reutilizados pelas páginas
 import { ReactNode, useState } from 'react';
-import type { Bebida, BebidaResumo } from '../lib/types';
+import type { Bebida, BebidaResumo, Local } from '../lib/types';
 
 export function Icon({ name, fill = false, className = '' }: { name: string; fill?: boolean; className?: string }) {
   return (
@@ -72,6 +72,8 @@ export function BebidaImagem({
       <img
         src={bebida.imagemUrl}
         alt={bebida.nome}
+        loading="lazy"
+        decoding="async"
         onError={() => setFalhou(true)}
         className={`h-full w-full object-cover ${className}`}
       />
@@ -92,6 +94,42 @@ export function BebidaImagem({
         name={vinho ? 'wine_bar' : 'local_bar'}
         className={`text-[96px] opacity-40 ${vinho ? 'text-[#ffb4c0]' : 'text-primary'}`}
       />
+    </div>
+  );
+}
+
+// foto do local com fallback em gradiente + ícone do tipo de estabelecimento
+const ICONE_LOCAL: Record<string, string> = { bar: 'local_bar', restaurante: 'restaurant', adega: 'wine_bar' };
+
+export function LocalImagem({
+  local,
+  className = '',
+}: {
+  local: Pick<Local, 'nome' | 'tipo' | 'imagemUrl'>;
+  className?: string;
+}) {
+  const [falhou, setFalhou] = useState(false);
+
+  if (local.imagemUrl && !falhou) {
+    return (
+      <img
+        src={local.imagemUrl}
+        alt={local.nome}
+        loading="lazy"
+        decoding="async"
+        onError={() => setFalhou(true)}
+        className={`h-full w-full object-cover ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_30%_20%,#8b500a_0%,#3a2108_55%,#0e0e0f_100%)] ${className}`}
+      role="img"
+      aria-label={local.nome}
+    >
+      <Icon name={ICONE_LOCAL[local.tipo ?? ''] ?? 'storefront'} className="text-[64px] text-primary opacity-40" />
     </div>
   );
 }

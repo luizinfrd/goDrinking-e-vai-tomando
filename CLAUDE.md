@@ -94,7 +94,9 @@ Ao mexer aqui, preserve a explicabilidade e a fórmula documentada no README, qu
 
 ### Seed ([prisma/seed.ts](backend/prisma/seed.ts))
 
-12 drinks, 12 vinhos, 8 locais fictícios em bairros de Campinas/SP (com coordenadas) e o usuário demo. Ele é **idempotente**: pode rodar várias vezes sem duplicar. Atributos de sabor novos precisam ter valores coerentes entre 0 e 1, porque alimentam o algoritmo direto.
+12 drinks, 12 vinhos, 8 locais fictícios em bairros de Campinas/SP (com coordenadas) e o usuário demo. Ele é **idempotente**: pode rodar várias vezes sem duplicar.
+
+As fotos ficam em `frontend/public/img/{bebidas,locais}/` e são ligadas pelo mapa `IMAGENS` do seed (`imagemUrl` = `/img/...`, servida pelo front). Elas vêm do Openverse sob CC BY, CC BY-SA ou CC0. **Toda imagem nova precisa de uma linha em `frontend/public/img/CREDITOS.md`**, porque as licenças CC BY exigem atribuição. Atributos de sabor novos precisam ter valores coerentes entre 0 e 1, porque alimentam o algoritmo direto.
 
 ## Arquitetura do frontend
 
