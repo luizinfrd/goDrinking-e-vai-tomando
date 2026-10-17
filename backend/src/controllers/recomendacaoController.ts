@@ -1,6 +1,25 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { recomendacaoService } from '../services/recomendacaoService';
+import { CODIGO_ONBOARDING_PENDENTE, recomendacaoService } from '../services/recomendacaoService';
+import { responderErro, statusDoErro } from '../utils/erros';
+
+function limiteDaQuery(valor: string | undefined, padrao: number) {
+  const n = Number(valor);
+  return Number.isInteger(n) && n > 0 ? Math.min(n, 50) : padrao;
+}
+
+// trata o cold start com um código que o front usa para mandar ao onboarding
+function responder(res: Response, error: unknown) {
+  const { status, mensagem } = statusDoErro(error);
+  if (status === 409 && mensagem === CODIGO_ONBOARDING_PENDENTE) {
+    res.status(409).json({
+      error: 'Conclua o onboarding de paladar para receber recomendações',
+      code: CODIGO_ONBOARDING_PENDENTE,
+    });
+    return;
+  }
+  responderErro(res, error);
+}
 
 export const recomendacaoController = {
   async recomendar(req: AuthRequest, res: Response) {
@@ -11,12 +30,12 @@ export const recomendacaoController = {
       const recomendacoes = await recomendacaoService.recomendar(
         userId,
         tipo,
-        limite ? Number(limite) : 10
+        limiteDaQuery(limite, 10)
       );
 
       res.status(200).json(recomendacoes);
-    } catch (error: any) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+    } catch (error) {
+      responder(res, error);
     }
   },
 
@@ -27,12 +46,12 @@ export const recomendacaoController = {
 
       const locais = await recomendacaoService.recomendarLocais(
         userId,
-        limite ? Number(limite) : 5
+        limiteDaQuery(limite, 5)
       );
 
       res.status(200).json(locais);
-    } catch (error: any) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+    } catch (error) {
+      responder(res, error);
     }
   },
 };

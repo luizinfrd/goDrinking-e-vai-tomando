@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -20,12 +21,19 @@ model User {
 }
 
 model UserPreference {
-  userId       String  @id
-  pesoDoce     Float   @default(0)
-  pesoSeco     Float   @default(0)
-  pesoCitrico  Float   @default(0)
-  pesoEncorpado Float  @default(0)
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              String  @id
+  // vetor atual usado pela recomendação (recalculado a cada avaliação)
+  pesoDoce            Float   @default(0)
+  pesoSeco            Float   @default(0)
+  pesoCitrico         Float   @default(0)
+  pesoEncorpado       Float   @default(0)
+  // vetor informado no onboarding (base fixa para o recálculo)
+  baseDoce            Float   @default(0)
+  baseSeco            Float   @default(0)
+  baseCitrico         Float   @default(0)
+  baseEncorpado       Float   @default(0)
+  onboardingConcluido Boolean @default(false)
+  user                User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_preferences")
 }
@@ -34,6 +42,8 @@ model Bebida {
   id               String          @id @default(uuid())
   nome             String
   tipo             String
+  descricao        String?
+  imagemUrl        String?
   atributoDoce     Float           @default(0)
   atributoSeco     Float           @default(0)
   atributoCitrico  Float           @default(0)
@@ -63,14 +73,21 @@ model Avaliacao {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   bebida    Bebida   @relation(fields: [bebidaId], references: [id], onDelete: Cascade)
 
+  // cada usuário avalia uma bebida uma única vez (pode editar depois)
+  @@unique([userId, bebidaId])
   @@map("avaliacoes")
 }
 
 model Local {
-  id       String        @id @default(uuid())
-  nome     String
-  endereco String?
-  bebidas  BebidaLocal[]
+  id        String        @id @default(uuid())
+  nome      String
+  tipo      String?       // bar, restaurante, adega...
+  endereco  String?
+  descricao String?
+  imagemUrl String?
+  latitude  Float?
+  longitude Float?
+  bebidas   BebidaLocal[]
 
   @@map("locais")
 }

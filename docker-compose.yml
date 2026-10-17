@@ -1,0 +1,49 @@
+# sobe banco + API + front com: docker compose up --build
+# para desenvolvimento local, basta o banco: docker compose up -d db
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: godrinking-db
+    environment:
+      POSTGRES_USER: godrinking
+      POSTGRES_PASSWORD: godrinking
+      POSTGRES_DB: godrinking
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U godrinking -d godrinking"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: godrinking-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://godrinking:godrinking@db:5432/godrinking?schema=public
+      JWT_SECRET: ${JWT_SECRET:-troque-este-segredo-em-producao}
+      JWT_EXPIRES_IN: 7d
+      PORT: 3000
+      NODE_ENV: production
+      CORS_ORIGIN: http://localhost:8080,http://localhost:5173
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:3000/api
+    container_name: godrinking-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:

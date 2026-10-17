@@ -2,8 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET as string;
+import { getJwtSecret } from '../utils/jwt';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -28,9 +27,9 @@ export const authMiddleware = (
     // extrai o token
     const token = authHeader.split(' ')[1];
 
-    // verifica e decodifica o token
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string };
-    req.user = decoded;
+    // verifica e decodifica o token (secret lido só agora, depois do dotenv)
+    const decoded = jwt.verify(token, getJwtSecret()) as { id: string; email: string };
+    req.user = { id: decoded.id, email: decoded.email };
 
     next();
   } catch (error) {

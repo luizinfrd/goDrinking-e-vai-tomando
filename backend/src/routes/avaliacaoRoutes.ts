@@ -8,6 +8,7 @@ router.get('/bebida/:id', avaliacaoController.listarPorBebida);
 
 router.post('/', authMiddleware, avaliacaoController.criar);
 router.get('/minhas', authMiddleware, avaliacaoController.listarPorUsuario);
+router.put('/:id', authMiddleware, avaliacaoController.atualizar);
 router.delete('/:id', authMiddleware, avaliacaoController.deletar);
 
 export default router;

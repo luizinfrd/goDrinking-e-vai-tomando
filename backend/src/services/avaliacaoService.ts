@@ -1,12 +1,25 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
+import { erros } from '../utils/erros';
+import { preferenciaService } from './preferenciaService';
 
-const prisma = new PrismaClient();
+export { isErroDeValidacao } from '../utils/erros';
 
-function isErroDeValidacao(msg: string): boolean {
-  return msg.startsWith('[validacao]');
+const COMENTARIO_MAX = 500;
+
+function validarNota(nota: number) {
+  if (!Number.isInteger(nota) || nota < 1 || nota > 5) {
+    throw erros.validacao('A nota deve ser um número inteiro entre 1 e 5');
+  }
 }
 
-export { isErroDeValidacao };
+function normalizarComentario(comentario: unknown): string | null {
+  if (comentario === undefined || comentario === null) return null;
+  const texto = String(comentario).trim();
+  if (texto.length > COMENTARIO_MAX) {
+    throw erros.validacao(`O comentário deve ter no máximo ${COMENTARIO_MAX} caracteres`);
+  }
+  return texto || null;
+}
 
 export const avaliacaoService = {
   async criar(userId: string, dados: {
@@ -14,69 +27,58 @@ export const avaliacaoService = {
     nota: number;
     comentario?: string;
   }) {
-    const { bebidaId, nota, comentario } = dados;
-
-    if (nota < 1 || nota > 5) {
-      throw new Error('[validacao] A nota deve ser entre 1 e 5');
-    }
+    const { bebidaId, nota } = dados;
+    validarNota(nota);
+    const comentario = normalizarComentario(dados.comentario);
 
     const bebida = await prisma.bebida.findUnique({ where: { id: bebidaId } });
     if (!bebida) {
-      throw new Error('[validacao] Bebida não encontrada');
+      throw erros.naoEncontrado('Bebida não encontrada');
     }
 
-    const avaliacaoExistente = await prisma.avaliacao.findFirst({
-      where: { userId, bebidaId },
+    const avaliacaoExistente = await prisma.avaliacao.findUnique({
+      where: { userId_bebidaId: { userId, bebidaId } },
     });
     if (avaliacaoExistente) {
-      throw new Error('[validacao] Você já avaliou essa bebida');
+      throw erros.conflito('Você já avaliou essa bebida');
     }
 
-    const preferencias = await prisma.userPreference.findUnique({
-      where: { userId },
-    });
-    if (!preferencias) {
-      throw new Error('[validacao] Preferências do usuário não encontradas');
-    }
-
-    const totalAvaliacoes = await prisma.avaliacao.count({ where: { userId } });
-
-    // calcula os novos scores de preferência usando média ponderada
-    const fator = nota / 5; // normaliza a nota para 0-1
-    const novosPesos = {
-      pesoDoce:      (preferencias.pesoDoce      * totalAvaliacoes + bebida.atributoDoce      * fator) / (totalAvaliacoes + 1),
-      pesoSeco:      (preferencias.pesoSeco      * totalAvaliacoes + bebida.atributoSeco      * fator) / (totalAvaliacoes + 1),
-      pesoCitrico:   (preferencias.pesoCitrico   * totalAvaliacoes + bebida.atributoCitrico   * fator) / (totalAvaliacoes + 1),
-      pesoEncorpado: (preferencias.pesoEncorpado * totalAvaliacoes + bebida.atributoEncorpado * fator) / (totalAvaliacoes + 1),
-    };
-
-    const totalAvaliacoesBebida = await prisma.avaliacao.count({ where: { bebidaId } });
-
-    // calcula a nova nota média da bebida
-    const novaNotaMedia = (bebida.notaMedia * totalAvaliacoesBebida + nota) / (totalAvaliacoesBebida + 1);
-
-    const avaliacao = await prisma.$transaction(async (tx) => {
-      // 1. cria a avaliação
+    // cria a avaliação e recalcula nota média + vetor de preferências na mesma transação
+    return prisma.$transaction(async (tx) => {
       const novaAvaliacao = await tx.avaliacao.create({
         data: { userId, bebidaId, nota, comentario },
+        include: { user: { select: { id: true, nome: true } } },
       });
-
-      // 2. atualiza a nota média da bebida
-      await tx.bebida.update({
-        where: { id: bebidaId },
-        data: { notaMedia: novaNotaMedia },
-      });
-
-      // 3. atualiza o vetor de preferências do usuário
-      await tx.userPreference.update({
-        where: { userId },
-        data: novosPesos,
-      });
-
+      await preferenciaService.recalcularNotaMedia(bebidaId, tx);
+      await preferenciaService.recalcular(userId, tx);
       return novaAvaliacao;
     });
+  },
 
-    return avaliacao;
+  async atualizar(id: string, userId: string, dados: { nota?: number; comentario?: string }) {
+    const avaliacao = await prisma.avaliacao.findUnique({ where: { id } });
+
+    if (!avaliacao) {
+      throw erros.naoEncontrado('Avaliação não encontrada');
+    }
+    if (avaliacao.userId !== userId) {
+      throw erros.proibido('Você não tem permissão para editar essa avaliação');
+    }
+    if (dados.nota !== undefined) validarNota(dados.nota);
+
+    return prisma.$transaction(async (tx) => {
+      const atualizada = await tx.avaliacao.update({
+        where: { id },
+        data: {
+          ...(dados.nota !== undefined && { nota: dados.nota }),
+          ...(dados.comentario !== undefined && { comentario: normalizarComentario(dados.comentario) }),
+        },
+        include: { user: { select: { id: true, nome: true } } },
+      });
+      await preferenciaService.recalcularNotaMedia(avaliacao.bebidaId, tx);
+      await preferenciaService.recalcular(userId, tx);
+      return atualizada;
+    });
   },
 
   async listarPorBebida(bebidaId: string) {
@@ -93,7 +95,7 @@ export const avaliacaoService = {
     return prisma.avaliacao.findMany({
       where: { userId },
       include: {
-        bebida: { select: { id: true, nome: true, tipo: true } },
+        bebida: { select: { id: true, nome: true, tipo: true, imagemUrl: true, notaMedia: true } },
       },
       orderBy: { data: 'desc' },
     });
@@ -103,13 +105,18 @@ export const avaliacaoService = {
     const avaliacao = await prisma.avaliacao.findUnique({ where: { id } });
 
     if (!avaliacao) {
-      throw new Error('[validacao] Avaliação não encontrada');
+      throw erros.naoEncontrado('Avaliação não encontrada');
     }
 
     if (avaliacao.userId !== userId) {
-      throw new Error('[validacao] Você não tem permissão para deletar essa avaliação');
+      throw erros.proibido('Você não tem permissão para deletar essa avaliação');
     }
 
-    await prisma.avaliacao.delete({ where: { id } });
+    // remove e desfaz o efeito na nota média e nas preferências (RF17)
+    await prisma.$transaction(async (tx) => {
+      await tx.avaliacao.delete({ where: { id } });
+      await preferenciaService.recalcularNotaMedia(avaliacao.bebidaId, tx);
+      await preferenciaService.recalcular(userId, tx);
+    });
   },
 };
