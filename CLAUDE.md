@@ -112,7 +112,10 @@ As fotos ficam em `frontend/public/img/{bebidas,locais}/` e são ligadas pelo ma
 - **`components/ui.tsx`:** `Icon` (Material Symbols), `Spinner`, `ErroBox`, `EstadoVazio`, `BebidaImagem`, `Estrelas`, `BarraSabor` e `TipoTag`. Reaproveite esses componentes antes de criar novos.
 - **Visual:** tema escuro "Obsidian & Amber", com os tokens do Stitch em [tailwind.config.js](frontend/tailwind.config.js). Use os tokens (`bg-surface-container`, `text-on-surface`, `text-primary`, `font-headline-md`, `text-label-sm`...) e **não cores hex soltas**. Fontes: Bodoni Moda nos títulos e Manrope no texto.
 - **Ícones:** Material Symbols servido como **subset local** (`public/fonts/material-symbols-subset.woff2`, só com os ícones usados). **Ao usar um ícone novo, regenere o subset incluindo o nome**, senão ele aparece como texto. A URL e as instruções estão no topo de `src/index.css`.
-- **Responsividade:** a sidebar ocupa 256px a partir de `lg`, então layouts de 3 colunas ou 12 colunas entram só em `xl:`. O padding lateral é `px-5 md:px-10 xl:px-margin-desktop`. Use `min-h-dvh` (não `min-h-screen`) e respeite `env(safe-area-inset-*)` em elementos fixos. Alvos de toque têm no mínimo 44px (`h-11 w-11`).
+- **Responsividade:** a sidebar ocupa 256px a partir de `lg`, então layouts de 3 colunas ou 12 colunas entram só em `xl:`. O padding lateral é `px-5 md:px-10 xl:px-margin-desktop`. Use `min-h-dvh` (não `min-h-screen`) e respeite `env(safe-area-inset-*)` em elementos fixos. Alvos de toque têm no mínimo 44px (`h-11 w-11` ou `min-h-11`), e círculos em flex precisam de `shrink-0`.
+  - **Celular é mobile-first:** cards de bebida em 2 colunas (`grid-cols-2 gap-3`), listas em linha horizontal, espaçamentos e títulos menores, e só depois `sm:`/`md:` para telas maiores.
+  - **`baixa:`** é um breakpoint customizado (altura de até 500px, celular deitado) que deixa topo, barra inferior e heroes compactos. **`2xl:`** alarga o container para 1560px e usa 4 colunas.
+  - **Mudou o `tailwind.config.js`?** Reinicie o `npm run dev`: o Tailwind deixa a config em cache e as variantes novas não aparecem até reiniciar.
 - `VITE_API_URL` tem o padrão `http://localhost:3000/api`.
 
 ## Git
