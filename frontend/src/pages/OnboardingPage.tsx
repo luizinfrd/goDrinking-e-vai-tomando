@@ -106,23 +106,23 @@ export default function OnboardingPage() {
     <div className="relative min-h-dvh overflow-clip bg-obsidian">
       <div className="pointer-events-none absolute -right-40 top-20 h-[520px] w-[520px] rounded-full bg-primary/5 blur-[140px]" />
 
-      <header className="flex h-20 items-center justify-between border-b border-surface-variant/10 px-5 md:px-margin-desktop">
+      <header className="flex h-16 items-center justify-between border-b border-surface-variant/10 px-5 pt-[env(safe-area-inset-top)] md:h-20 md:px-margin-desktop">
         <Logo />
         {refazendo && (
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-on-surface-variant hover:text-primary">
+          <button onClick={() => navigate(-1)} className="-mr-2 flex min-h-11 items-center gap-2 px-2 text-on-surface-variant hover:text-primary">
             <Icon name="close" /> Cancelar
           </button>
         )}
       </header>
 
-      <main className="relative mx-auto max-w-container-max px-5 pb-16 pt-12 md:px-margin-desktop">
+      <main className="relative mx-auto max-w-container-max px-5 pb-0 pt-8 md:px-margin-desktop md:pb-16 md:pt-12">
         {/* stepper */}
-        <div className="mb-10 flex flex-col gap-4">
+        <div className="mb-8 flex flex-col gap-3 md:mb-10 md:gap-4">
           <div className="flex gap-2">
             {PERGUNTAS.map((p, i) => (
               <div
                 key={p.chave}
-                className={`h-1 w-16 rounded-full transition-colors md:w-24 ${i <= passo ? 'bg-primary' : 'bg-surface-variant'}`}
+                className={`h-1 flex-1 rounded-full transition-colors md:w-24 md:flex-none ${i <= passo ? 'bg-primary' : 'bg-surface-variant'}`}
               />
             ))}
           </div>
@@ -132,12 +132,12 @@ export default function OnboardingPage() {
         </div>
 
         {passo === 0 && (
-          <div className="mb-12 max-w-3xl">
+          <div className="mb-8 max-w-3xl md:mb-12">
             <h1 className="font-display-lg text-headline-lg-mobile md:text-display-lg">
               {refazendo ? 'Vamos recalibrar' : `Olá, ${usuario?.nome.split(' ')[0] ?? ''}! Comece sua jornada sensorial no`}{' '}
               <span className="italic text-primary">goDrinking</span>.
             </h1>
-            <p className="mt-4 font-body-lg text-body-lg text-on-surface-variant">
+            <p className="mt-3 text-on-surface-variant md:mt-4 md:font-body-lg md:text-body-lg">
               Para recomendarmos a bebida perfeita, precisamos entender o seu paladar. Não existe resposta certa — escolha o
               que mais combina com você.
             </p>
@@ -145,13 +145,13 @@ export default function OnboardingPage() {
         )}
 
         <section key={pergunta.chave} className="animate-[fadeIn_0.4s_ease]">
-          <div className="mb-8 flex items-center gap-4">
+          <div className="mb-6 flex items-center gap-4 md:mb-8">
             <h2 className="font-headline-md text-headline-md text-primary">{pergunta.titulo}</h2>
             <div className="hidden h-px flex-1 bg-surface-variant/30 md:block" />
           </div>
-          <p className="-mt-4 mb-8 text-on-surface-variant">{pergunta.subtitulo}</p>
+          <p className="-mt-3 mb-6 text-sm text-on-surface-variant md:-mt-4 md:mb-8 md:text-body-md">{pergunta.subtitulo}</p>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-3 md:gap-6">
             {pergunta.opcoes.map((op) => {
               const ativa = respostas[pergunta.chave] === op.valor;
               return (
@@ -163,22 +163,24 @@ export default function OnboardingPage() {
                     setErro('');
                   }}
                   aria-pressed={ativa}
-                  className={`glass-card group relative flex h-56 flex-col justify-end rounded-2xl p-6 text-left transition-all hover:bg-surface-container-high/40 ${
+                  className={`glass-card group relative flex min-h-[84px] items-center gap-4 rounded-2xl p-4 pr-14 text-left transition-all md:h-56 md:flex-col md:items-start md:justify-end md:gap-0 md:p-6 hover:bg-surface-container-high/40 ${
                     ativa ? 'active-ring bg-primary/5 ring-2 ring-primary' : ''
                   }`}
                 >
                   <div
-                    className={`absolute right-5 top-5 flex h-7 w-7 items-center justify-center rounded-full border transition-all ${
+                    className={`absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border transition-all md:right-5 md:top-5 md:translate-y-0 ${
                       ativa ? 'border-primary bg-primary text-on-primary' : 'border-outline/40'
                     }`}
                   >
                     {ativa && <Icon name="check" className="text-base" />}
                   </div>
-                  <div className="mb-auto flex h-14 w-14 items-center justify-center rounded-full bg-surface-container-highest/60">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface-container-highest/60 md:mb-auto md:h-14 md:w-14">
                     <Icon name={op.icone} className={`text-3xl ${ativa ? 'text-primary' : 'text-on-surface-variant'}`} />
                   </div>
-                  <h3 className="font-headline-md text-headline-md">{op.titulo}</h3>
-                  <p className="text-sm text-on-surface-variant">{op.texto}</p>
+                  <span className="block">
+                    <span className="block font-headline-md text-[20px] leading-tight md:text-headline-md">{op.titulo}</span>
+                    <span className="block text-sm text-on-surface-variant">{op.texto}</span>
+                  </span>
                 </button>
               );
             })}
@@ -186,26 +188,27 @@ export default function OnboardingPage() {
         </section>
 
         {erro && (
-          <p className="mt-8 flex items-center gap-2 text-sm text-error" role="alert">
+          <p className="mt-6 flex items-center gap-2 text-sm text-error md:mt-8" role="alert">
             <Icon name="error" /> {erro}
           </p>
         )}
 
-        <footer className="mt-14 flex items-center justify-between border-t border-surface-variant/20 pt-8">
+        <footer className="sticky bottom-0 -mx-5 mt-8 flex items-center justify-between border-t border-surface-variant/20 bg-obsidian/90 px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl md:static md:mx-0 md:mt-14 md:bg-transparent md:px-0 md:pb-0 md:pt-8 md:backdrop-blur-none">
           <button
             type="button"
             onClick={() => setPasso((p) => Math.max(0, p - 1))}
             disabled={passo === 0}
-            className="flex items-center gap-2 font-label-md text-label-md uppercase tracking-widest text-on-surface-variant transition-colors hover:text-primary disabled:opacity-30"
+            className="-ml-2 flex min-h-11 items-center gap-2 px-2 font-label-md text-label-md uppercase tracking-widest text-on-surface-variant transition-colors hover:text-primary disabled:opacity-30"
           >
             <Icon name="arrow_back" /> Voltar
           </button>
-          <button type="button" onClick={avancar} disabled={salvando} className="btn-primary px-10">
+          <button type="button" onClick={avancar} disabled={salvando} className="btn-primary sm:px-10">
             {salvando ? (
               <Icon name="progress_activity" className="animate-spin" />
             ) : ultimo ? (
               <>
-                Ver minhas recomendações <Icon name="auto_awesome" />
+                <span className="sm:hidden">Concluir</span>
+                <span className="hidden sm:inline">Ver minhas recomendações</span> <Icon name="auto_awesome" />
               </>
             ) : (
               <>

@@ -57,8 +57,8 @@ export default function NovaBebidaPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-12 md:px-10 xl:px-margin-desktop">
-      <Link to="/bebidas" className="mb-8 inline-flex items-center gap-2 text-on-surface-variant hover:text-primary">
+    <div className="mx-auto max-w-3xl px-5 py-8 md:px-10 md:py-12 xl:px-margin-desktop">
+      <Link to="/bebidas" className="mb-4 inline-flex min-h-11 items-center gap-2 md:mb-6 text-on-surface-variant hover:text-primary">
         <Icon name="arrow_back" /> Catálogo
       </Link>
       <span className="eyebrow block">Nova bebida</span>
@@ -142,7 +142,7 @@ export default function NovaBebidaPage() {
                 step={0.1}
                 value={sabor[d.chave]}
                 onChange={(e) => setSabor((s) => ({ ...s, [d.chave]: Number(e.target.value) }))}
-                className="w-full accent-[#ffb876]"
+                className="h-11 w-full cursor-pointer accent-primary"
               />
             </label>
           ))}

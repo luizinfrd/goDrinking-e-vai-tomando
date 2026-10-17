@@ -119,12 +119,12 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="flex cursor-pointer items-start gap-3 text-sm text-on-surface-variant">
+            <label className="flex min-h-11 cursor-pointer items-center gap-3 py-1 text-sm text-on-surface-variant">
               <input
                 type="checkbox"
                 checked={termos}
                 onChange={(e) => setTermos(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-outline bg-transparent accent-[#ffb876]"
+                className="h-5 w-5 shrink-0 rounded border-outline bg-transparent accent-primary"
               />
               <span>
                 Concordo com os <span className="text-primary">Termos de Uso</span> e a{' '}

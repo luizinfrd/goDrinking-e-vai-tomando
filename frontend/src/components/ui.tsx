@@ -102,11 +102,11 @@ export function BebidaImagem({
 // placeholder com o formato do card enquanto a primeira carga não chega (evita pulo de layout)
 export function GradeSkeleton({ quantidade = 6, rotulo = 'Carregando...' }: { quantidade?: number; rotulo?: string }) {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3" role="status" aria-label={rotulo}>
+    <div className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4" role="status" aria-label={rotulo}>
       {Array.from({ length: quantidade }, (_, i) => (
         <div key={i} className="overflow-hidden rounded-2xl border border-surface-variant/10 bg-surface-container/40">
-          <div className="h-48 animate-pulse bg-surface-container-high" />
-          <div className="space-y-3 p-6">
+          <div className="aspect-[4/3] animate-pulse bg-surface-container-high" />
+          <div className="space-y-3 p-3 sm:p-6">
             <div className="h-6 w-2/3 animate-pulse rounded bg-surface-container-high" />
             <div className="h-3 w-1/3 animate-pulse rounded bg-surface-container-high" />
             <div className="h-3 w-full animate-pulse rounded bg-surface-container-high" />

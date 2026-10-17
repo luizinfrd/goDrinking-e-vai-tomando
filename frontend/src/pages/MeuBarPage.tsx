@@ -6,13 +6,25 @@ import { useAuth } from '../context/AuthContext';
 import { api, mensagemDeErro } from '../lib/api';
 import { DIMENSOES, formatarNota } from '../lib/sabor';
 
-function Stat({ rotulo, valor, legenda, children }: { rotulo: string; valor: string; legenda: string; children?: ReactNode }) {
+function Stat({
+  rotulo,
+  valor,
+  legenda,
+  largo = false,
+  children,
+}: {
+  rotulo: string;
+  valor: string;
+  legenda: string;
+  largo?: boolean;
+  children?: ReactNode;
+}) {
   return (
-    <div className="glass-panel flex flex-col gap-4 rounded-2xl p-8">
-      <span className="eyebrow">{rotulo}</span>
-      <div className="flex items-baseline gap-3">
-        <span className="font-display-lg text-display-lg">{valor}</span>
-        <span className="text-on-surface-variant">{legenda}</span>
+    <div className={`glass-panel flex flex-col gap-2 rounded-2xl p-5 md:gap-4 md:p-8 ${largo ? 'col-span-2 md:col-span-1' : ''}`}>
+      <span className="eyebrow !tracking-[0.15em] md:!tracking-[0.3em]">{rotulo}</span>
+      <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:gap-3">
+        <span className="font-display-lg text-[36px] leading-none md:text-display-lg">{valor}</span>
+        <span className="text-sm text-on-surface-variant md:text-body-md">{legenda}</span>
       </div>
       {children}
     </div>
@@ -67,8 +79,8 @@ export default function MeuBarPage() {
   }
 
   return (
-    <div className="mx-auto max-w-container-max px-5 py-12 md:px-10 xl:px-margin-desktop">
-      <header className="mb-12 flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
+    <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 py-8 md:px-10 md:py-12 xl:px-margin-desktop">
+      <header className="mb-8 flex flex-col md:mb-12 justify-between gap-6 xl:flex-row xl:items-end">
         <div>
           {editandoNome ? (
             <form onSubmit={salvarNome} className="flex items-center gap-3">
@@ -122,7 +134,7 @@ export default function MeuBarPage() {
         </div>
       </header>
 
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-6">
         <Stat rotulo="Experiências" valor={String(estatisticas.totalAvaliacoes)} legenda="bebidas avaliadas">
           <p className="text-sm text-outline">
             {estatisticas.drinks} drinks · {estatisticas.vinhos} vinhos
@@ -135,14 +147,14 @@ export default function MeuBarPage() {
             ))}
           </div>
         </Stat>
-        <Stat rotulo="Histórico" valor="→" legenda="suas avaliações">
-          <Link to="/minhas-avaliacoes" className="text-sm font-bold text-primary hover:underline">
+        <Stat rotulo="Histórico" valor="→" legenda="suas avaliações" largo>
+          <Link to="/minhas-avaliacoes" className="inline-flex min-h-11 items-center text-sm font-bold text-primary hover:underline">
             Ver, editar ou excluir
           </Link>
         </Stat>
       </section>
 
-      <section className="mt-12 grid gap-6 xl:grid-cols-12">
+      <section className="mt-8 grid gap-4 md:mt-12 md:gap-6 xl:grid-cols-12">
         <div className="glass-card shine-border space-y-6 rounded-[32px] p-6 md:p-8 xl:col-span-7">
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
             <div>
@@ -161,20 +173,20 @@ export default function MeuBarPage() {
             ))}
         </div>
 
-        <div className="flex flex-col gap-6 xl:col-span-5">
-          <div className="glass-panel rounded-2xl p-8">
+        <div className="flex flex-col gap-4 md:gap-6 xl:col-span-5">
+          <div className="glass-panel rounded-2xl p-6 md:p-8">
             <h3 className="font-headline-md text-headline-md">Como funciona</h3>
             <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
               Cada avaliação puxa seu vetor na direção dos atributos da bebida, com peso proporcional à nota (nota ÷ 5). O
               resultado é uma média ponderada entre suas respostas iniciais e tudo que você já provou.
             </p>
           </div>
-          <div className="rounded-2xl border border-error/20 p-8">
+          <div className="rounded-2xl border border-error/20 p-6 md:p-8">
             <h3 className="font-headline-md text-headline-md text-error">Zona de perigo</h3>
             <p className="mt-3 text-sm text-on-surface-variant">
               Exclui sua conta e todos os dados associados (LGPD).
             </p>
-            <button onClick={excluirConta} className="mt-5 flex items-center gap-2 text-sm font-bold text-error hover:underline">
+            <button onClick={excluirConta} className="mt-3 flex min-h-11 items-center gap-2 text-sm font-bold text-error hover:underline">
               <Icon name="delete_forever" /> Excluir minha conta
             </button>
           </div>

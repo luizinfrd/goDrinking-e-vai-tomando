@@ -26,21 +26,21 @@ export default function BebidasPage() {
   );
 
   return (
-    <div className="mx-auto max-w-container-max px-5 py-12 md:px-10 xl:px-margin-desktop">
-      <header className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+    <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 py-8 md:px-10 md:py-12 xl:px-margin-desktop">
+      <header className="mb-6 flex flex-col justify-between gap-5 md:mb-10 md:flex-row md:items-end md:gap-6">
         <div className="max-w-2xl">
           <span className="eyebrow">Enciclopédia</span>
           <h1 className="mt-3 font-display-lg text-headline-lg-mobile md:text-display-lg">Catálogo de bebidas</h1>
-          <p className="mt-4 font-body-lg text-body-lg text-on-surface-variant">
+          <p className="mt-3 text-on-surface-variant md:mt-4 md:font-body-lg md:text-body-lg">
             Drinks clássicos e vinhos do mundo, com o perfil sensorial de cada um. Ordenados pela avaliação da comunidade.
           </p>
         </div>
-        <Link to="/bebidas/nova" className="btn-ghost shrink-0">
+        <Link to="/bebidas/nova" className="btn-ghost shrink-0 self-start md:self-auto">
           <Icon name="add" /> Cadastrar bebida
         </Link>
       </header>
 
-      <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="mb-6 flex flex-col gap-3 md:mb-10 md:flex-row md:items-center md:justify-between md:gap-4">
         <label className="relative flex w-full items-center md:max-w-md">
           <Icon name="search" className="absolute left-4 text-outline" />
           <input
@@ -84,10 +84,10 @@ export default function BebidasPage() {
         />
       ) : (
         <>
-          <p className="mb-6 font-label-sm text-label-sm uppercase tracking-widest text-outline">
+          <p className="mb-4 font-label-sm md:mb-6 text-label-sm uppercase tracking-widest text-outline">
             {bebidas.length} {bebidas.length === 1 ? 'bebida' : 'bebidas'}
           </p>
-          <div className={`grid gap-6 sm:grid-cols-2 xl:grid-cols-3 ${carregando ? 'opacity-60' : ''}`}>
+          <div className={`grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4 ${carregando ? 'opacity-60' : ''}`}>
             {bebidas.map((b) => (
               <BebidaCard
                 key={b.id}

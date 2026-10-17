@@ -28,8 +28,8 @@ export default function LocalDetalhePage() {
       : null;
 
   return (
-    <div className="mx-auto max-w-container-max px-5 py-12 md:px-10 xl:px-margin-desktop">
-      <Link to="/mapa" className="mb-8 inline-flex items-center gap-2 text-on-surface-variant hover:text-primary">
+    <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 py-8 md:px-10 md:py-12 xl:px-margin-desktop">
+      <Link to="/mapa" className="mb-3 inline-flex min-h-11 items-center gap-2 md:mb-6 text-on-surface-variant hover:text-primary">
         <Icon name="arrow_back" /> Mapa
       </Link>
 
@@ -39,10 +39,10 @@ export default function LocalDetalhePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/60 to-transparent" />
         </div>
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-primary/10 blur-[100px]" />
-        <div className="relative pt-24 md:pt-32">
+        <div className="relative pt-16 md:pt-32">
           {local.tipo && <TipoTag>{local.tipo}</TipoTag>}
           <h1 className="mt-4 font-display-lg text-headline-lg-mobile md:text-display-lg">{local.nome}</h1>
-          {local.descricao && <p className="mt-4 max-w-2xl font-body-lg text-body-lg text-on-surface-variant">{local.descricao}</p>}
+          {local.descricao && <p className="mt-3 max-w-2xl text-on-surface-variant md:mt-4 md:font-body-lg md:text-body-lg">{local.descricao}</p>}
           <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-on-surface-variant">
             {local.endereco && (
               <span className="flex items-center gap-2">
@@ -50,7 +50,7 @@ export default function LocalDetalhePage() {
               </span>
             )}
             {linkMapa && (
-              <a href={linkMapa} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+              <a href={linkMapa} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-2 text-primary hover:underline">
                 <Icon name="near_me" /> Como chegar
               </a>
             )}
@@ -58,14 +58,14 @@ export default function LocalDetalhePage() {
         </div>
       </header>
 
-      <section className="mt-14">
-        <h2 className="font-display-lg text-headline-lg">Bebidas disponíveis</h2>
+      <section className="mt-10 md:mt-14">
+        <h2 className="font-display-lg text-headline-lg-mobile md:text-headline-lg">Bebidas disponíveis</h2>
         <p className="mt-2 text-on-surface-variant">Ordenadas pela avaliação média da comunidade.</p>
-        <div className="mt-8">
+        <div className="mt-6 md:mt-8">
           {local.bebidas.length === 0 ? (
             <EstadoVazio icone="no_drinks" titulo="Nenhuma bebida cadastrada" texto="Este local ainda não tem bebidas associadas." />
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4">
               {local.bebidas.map((b) => (
                 <BebidaCard key={b.id} bebida={b} />
               ))}

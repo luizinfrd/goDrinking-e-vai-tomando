@@ -75,17 +75,17 @@ export default function RecomendacoesPage() {
     <div>
       {/* hero com a recomendação nº 1 */}
       {primeiraCarga ? (
-        <section className="min-h-[560px] animate-pulse bg-surface-container-low lg:min-h-[640px]" aria-hidden />
+        <section className="min-h-[420px] animate-pulse bg-surface-container-low sm:min-h-[560px] lg:min-h-[640px] baixa:min-h-[300px]" aria-hidden />
       ) : destaque ? (
         <section
-          className={`relative flex min-h-[560px] items-end overflow-hidden transition-opacity lg:min-h-[640px] ${carregando ? 'opacity-60' : ''}`}
+          className={`relative flex min-h-[420px] items-end overflow-hidden transition-opacity sm:min-h-[560px] lg:min-h-[640px] baixa:min-h-0 baixa:pt-10 ${carregando ? 'opacity-60' : ''}`}
         >
           <div className="absolute inset-0">
             <BebidaImagem bebida={destaque} className="brightness-[0.45]" />
             <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-obsidian/80 to-transparent" />
           </div>
-          <div className="relative z-10 mx-auto w-full max-w-container-max px-5 pb-16 md:px-10 xl:px-margin-desktop">
+          <div className="relative z-10 mx-auto w-full max-w-container-max 2xl:max-w-[1560px] px-5 pb-10 sm:pb-16 md:px-10 xl:px-margin-desktop">
             <span className="eyebrow">Sua melhor combinação agora</span>
             <h1 className="mt-4 max-w-3xl hyphens-auto break-words font-display-lg text-[32px] leading-[1.1] sm:text-[40px] md:text-[64px]">
               Beba <span className="italic text-primary">{destaque.nome}</span>
@@ -96,14 +96,14 @@ export default function RecomendacoesPage() {
                 </>
               )}
             </h1>
-            <p className="mt-4 max-w-2xl font-body-lg text-body-lg text-on-surface-variant">
+            <p className="mt-3 max-w-2xl text-on-surface-variant sm:mt-4 sm:font-body-lg sm:text-body-lg">
               {destaque.descricao ?? subtituloBebida(destaque)}
             </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="mt-4 flex flex-wrap items-center gap-2 sm:mt-6 sm:gap-3">
               <Compatibilidade score={destaque.score} />
               <span className="text-sm text-on-surface-variant">{destaque.motivo}</span>
             </div>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-6 flex flex-wrap gap-3 sm:mt-8 sm:gap-4">
               <Link to={`/bebidas/${destaque.id}`} className="btn-primary">
                 <Icon name="local_bar" fill /> Ver detalhes
               </Link>
@@ -116,7 +116,7 @@ export default function RecomendacoesPage() {
           </div>
         </section>
       ) : (
-        <header className="mx-auto max-w-container-max px-5 pb-4 pt-12 md:px-10 xl:px-margin-desktop">
+        <header className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 pb-4 pt-12 md:px-10 xl:px-margin-desktop">
           <span className="eyebrow">Recomendações</span>
           <h1 className="mt-3 font-display-lg text-headline-lg-mobile md:text-display-lg">
             Olá, {usuario?.nome.split(' ')[0]}
@@ -124,12 +124,12 @@ export default function RecomendacoesPage() {
         </header>
       )}
 
-      <div className="mx-auto max-w-container-max space-y-16 px-5 py-12 md:px-10 xl:px-margin-desktop">
+      <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] space-y-12 px-5 py-8 sm:space-y-16 sm:py-12 md:px-10 xl:px-margin-desktop">
         <section>
-          <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div className="mb-6 flex flex-col justify-between gap-4 md:mb-8 md:flex-row md:items-end md:gap-6">
             <div>
-              <h2 className="font-display-lg text-headline-lg">Feito para o seu paladar</h2>
-              <p className="mt-2 flex items-start gap-2 text-on-surface-variant">
+              <h2 className="font-display-lg text-headline-lg-mobile md:text-headline-lg">Feito para o seu paladar</h2>
+              <p className="mt-2 flex items-start gap-2 text-sm text-on-surface-variant sm:text-body-md">
                 <Icon name="info" className="mt-0.5 text-base text-primary" />
                 {totalAvaliacoes > 0
                   ? `Baseado no seu onboarding e nas suas ${totalAvaliacoes} avaliações. Quanto mais você avalia, mais precisas ficam as sugestões.`
@@ -168,33 +168,40 @@ export default function RecomendacoesPage() {
           ) : demais.length === 0 ? (
             <p className="text-on-surface-variant">Sua recomendação principal está logo acima.</p>
           ) : (
-            <div className={`grid gap-6 transition-opacity sm:grid-cols-2 xl:grid-cols-3 ${carregando ? 'pointer-events-none opacity-60' : ''}`}>
+            <div className={`grid gap-4 transition-opacity sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4 ${carregando ? 'pointer-events-none opacity-60' : ''}`}>
               {demais.map((r, i) => (
                 <article
                   key={r.id}
-                  className="glass-card glass-card-hover shine-border group flex flex-col overflow-hidden rounded-2xl"
+                  className="glass-card glass-card-hover shine-border group flex overflow-hidden rounded-2xl sm:flex-col"
                 >
-                  <Link to={`/bebidas/${r.id}`} className="relative block h-48 overflow-hidden" tabIndex={-1} aria-hidden>
+                  <Link to={`/bebidas/${r.id}`} className="relative block w-28 shrink-0 overflow-hidden sm:h-48 sm:w-auto" tabIndex={-1} aria-hidden>
                     <BebidaImagem bebida={r} className="transition-transform duration-700 group-hover:scale-110" />
                     <div className="image-overlay absolute inset-0" />
-                    <div className="absolute left-4 top-4 flex gap-2">
+                    <div className="absolute left-2 top-2 flex gap-2 sm:left-4 sm:top-4">
                       <TipoTag>#{i + 2}</TipoTag>
-                      <TipoTag>{r.tipo === 'vinho' ? 'Vinho' : 'Drink'}</TipoTag>
+                      <span className="hidden sm:inline-flex">
+                        <TipoTag>{r.tipo === 'vinho' ? 'Vinho' : 'Drink'}</TipoTag>
+                      </span>
                     </div>
-                    <div className="absolute bottom-4 left-4">
+                    <div className="absolute bottom-4 left-4 hidden sm:block">
                       <Compatibilidade score={r.score} />
                     </div>
                   </Link>
-                  <div className="flex flex-1 flex-col gap-3 p-6">
+                  <div className="flex min-w-0 flex-1 flex-col gap-2 p-4 sm:gap-3 sm:p-6">
+                    <div className="self-start sm:hidden">
+                      <Compatibilidade score={r.score} />
+                    </div>
                     <div>
                       <Link to={`/bebidas/${r.id}`}>
-                        <h3 className="font-headline-md text-headline-md transition-colors group-hover:text-primary">{r.nome}</h3>
+                        <h3 className="font-headline-md text-lg leading-tight transition-colors group-hover:text-primary sm:text-headline-md">
+                          {r.nome}
+                        </h3>
                       </Link>
-                      <p className="font-label-sm text-label-sm uppercase tracking-widest text-outline">
+                      <p className="mt-1 font-label-sm text-[11px] uppercase tracking-wider text-outline sm:text-label-sm sm:tracking-widest">
                         {subtituloBebida(r)} · <Icon name="star" fill className="text-xs text-primary" /> {formatarNota(r.notaMedia)}
                       </p>
                     </div>
-                    <p className="text-sm italic text-on-surface-variant">{r.motivo}.</p>
+                    <p className="line-clamp-2 text-sm italic text-on-surface-variant sm:line-clamp-none">{r.motivo}.</p>
                     <div className="mt-auto border-t border-surface-variant/20 pt-3">
                       <OndeBeber locais={r.locais} />
                     </div>
@@ -206,24 +213,24 @@ export default function RecomendacoesPage() {
         </section>
 
         {locais && locais.length > 0 && (
-          <section className="-mx-5 bg-surface-container-low px-5 py-14 md:-mx-10 xl:-mx-margin-desktop md:px-10 xl:px-margin-desktop">
+          <section className="-mx-5 bg-surface-container-low px-5 py-10 sm:py-14 md:-mx-10 xl:-mx-margin-desktop md:px-10 xl:px-margin-desktop">
             <span className="eyebrow">Onde ir</span>
-            <h2 className="mt-3 font-display-lg text-headline-lg">Lugares que combinam com você</h2>
+            <h2 className="mt-3 font-display-lg text-headline-lg-mobile md:text-headline-lg">Lugares que combinam com você</h2>
             <p className="mt-2 text-on-surface-variant">Estabelecimentos com mais bebidas compatíveis com o seu perfil.</p>
-            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-6 grid gap-4 sm:mt-8 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
               {locais.map((l) => (
                 <Link
                   key={l.id}
                   to={`/locais/${l.id}`}
                   className="glass-card glass-card-hover flex flex-col overflow-hidden rounded-2xl"
                 >
-                  <div className="relative h-40">
+                  <div className="relative h-32 sm:h-40">
                     <LocalImagem local={l} />
                     <span className="absolute right-3 top-3 rounded-full bg-obsidian/80 backdrop-blur">
                       <Compatibilidade score={l.scoreCompatibilidade} />
                     </span>
                   </div>
-                  <div className="flex flex-col gap-3 p-6">
+                  <div className="flex flex-col gap-2 p-5 sm:gap-3 sm:p-6">
                     <div>
                       <TipoTag>{l.tipo ?? 'Local'}</TipoTag>
                       <h3 className="mt-3 font-headline-md text-headline-md">{l.nome}</h3>
@@ -236,7 +243,7 @@ export default function RecomendacoesPage() {
                 </Link>
               ))}
             </div>
-            <Link to="/mapa" className="mt-8 inline-flex items-center gap-2 font-label-md text-label-md uppercase tracking-widest text-primary">
+            <Link to="/mapa" className="mt-6 inline-flex min-h-11 items-center gap-2 sm:mt-8 font-label-md text-label-md uppercase tracking-widest text-primary">
               Ver todos no mapa <Icon name="arrow_forward" />
             </Link>
           </section>

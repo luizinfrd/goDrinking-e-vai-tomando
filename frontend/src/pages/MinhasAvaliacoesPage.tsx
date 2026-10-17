@@ -38,16 +38,16 @@ export default function MinhasAvaliacoesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-container-max px-5 py-12 md:px-10 xl:px-margin-desktop">
+    <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 py-8 md:px-10 md:py-12 xl:px-margin-desktop">
       <span className="eyebrow">Histórico</span>
       <h1 className="mt-3 font-display-lg text-headline-lg-mobile md:text-display-lg">Minhas avaliações</h1>
-      <p className="mt-4 max-w-2xl text-on-surface-variant">
+      <p className="mt-3 max-w-2xl text-on-surface-variant md:mt-4">
         Cada avaliação ajusta seu vetor de preferências. Editar ou excluir também recalcula suas recomendações.
       </p>
 
       {erroAcao && <p className="mt-6 text-sm text-error">{erroAcao}</p>}
 
-      <div className="mt-10">
+      <div className="mt-6 md:mt-10">
         {carregando ? (
           <Spinner />
         ) : erro ? (
@@ -67,22 +67,22 @@ export default function MinhasAvaliacoesPage() {
           <ul className="space-y-4">
             {avaliacoes.map((a) => (
               <li key={a.id} className="glass-card overflow-hidden rounded-2xl">
-                <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
-                  <Link to={`/bebidas/${a.bebidaId}`} className="h-20 w-20 shrink-0 overflow-hidden rounded-xl">
+                <div className="flex items-start gap-4 p-4 sm:items-center sm:gap-5 sm:p-5">
+                  <Link to={`/bebidas/${a.bebidaId}`} className="h-16 w-16 shrink-0 overflow-hidden rounded-xl sm:h-20 sm:w-20">
                     {a.bebida && <BebidaImagem bebida={a.bebida} />}
                   </Link>
                   <div className="min-w-0 flex-1">
-                    <Link to={`/bebidas/${a.bebidaId}`} className="font-headline-md text-headline-md hover:text-primary">
+                    <Link to={`/bebidas/${a.bebidaId}`} className="-my-3 block py-3 font-headline-md text-lg leading-tight hover:text-primary sm:text-headline-md">
                       {a.bebida?.nome}
                     </Link>
-                    <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-outline">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-outline sm:text-sm">
                       <Estrelas nota={a.nota} tamanho="text-sm" />
                       <span>{formatarData(a.data)}</span>
                       <span className="uppercase tracking-widest">{a.bebida?.tipo}</span>
                     </div>
-                    {a.comentario && <p className="mt-2 italic text-on-surface-variant">“{a.comentario}”</p>}
+                    {a.comentario && <p className="mt-2 line-clamp-2 text-sm italic text-on-surface-variant sm:line-clamp-none sm:text-body-md">“{a.comentario}”</p>}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="-my-1 -mr-2 flex shrink-0 flex-col sm:m-0 sm:flex-row sm:gap-2">
                     <button
                       onClick={() => setEditando(editando === a.id ? null : a.id)}
                       className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-variant/30 hover:text-primary"

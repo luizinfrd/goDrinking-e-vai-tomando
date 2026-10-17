@@ -5,6 +5,10 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      // telas baixas (celular deitado): topo, barra inferior e heroes mais compactos
+      screens: {
+        baixa: { raw: '(max-height: 500px)' },
+      },
       colors: {
         obsidian: '#0A0A0B',
         'surface-tint': '#ffb876',

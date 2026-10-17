@@ -49,17 +49,17 @@ export function AppLayout() {
     <div className="min-h-dvh bg-obsidian">
       {/* sidebar desktop */}
       <aside className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col gap-8 overflow-y-auto border-r border-surface-variant/10 bg-surface-container-lowest px-6 py-8 lg:flex">
-        <NavLink to="/">
+        <NavLink to="/" className="flex min-h-11 items-center">
           <Logo />
         </NavLink>
 
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/30 bg-primary/10 font-label-md text-primary">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/10 font-label-md text-primary">
             {iniciais(usuario?.nome)}
           </div>
           <div className="min-w-0">
             <p className="truncate font-label-md text-label-md text-on-surface">{usuario?.nome}</p>
-            <p className="truncate text-label-sm uppercase tracking-widest text-outline">Explorador de sabores</p>
+            <p className="truncate text-[11px] uppercase tracking-widest text-outline">Explorador de sabores</p>
           </div>
         </div>
 
@@ -94,8 +94,8 @@ export function AppLayout() {
       </aside>
 
       {/* topo mobile */}
-      <header className="sticky top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between border-b border-surface-variant/10 bg-obsidian/80 px-5 pt-[env(safe-area-inset-top)] backdrop-blur-xl lg:hidden">
-        <NavLink to="/">
+      <header className="sticky top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] items-center baixa:h-[calc(3rem+env(safe-area-inset-top))] justify-between border-b border-surface-variant/10 bg-obsidian/80 px-5 pt-[env(safe-area-inset-top)] backdrop-blur-xl lg:hidden">
+        <NavLink to="/" className="flex min-h-11 items-center">
           <Logo className="text-headline-md" />
         </NavLink>
         <NavLink
@@ -109,7 +109,7 @@ export function AppLayout() {
         </NavLink>
       </header>
 
-      <main className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:ml-64 lg:pb-0">
+      <main className="pb-[calc(6rem+env(safe-area-inset-bottom))] baixa:pb-[calc(4rem+env(safe-area-inset-bottom))] lg:ml-64 lg:pb-0">
         <Outlet />
       </main>
 
@@ -124,7 +124,7 @@ export function AppLayout() {
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-label-sm uppercase tracking-wider ${
+              `flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-label-sm uppercase tracking-wider baixa:min-h-11 baixa:flex-row baixa:gap-2 baixa:py-1 ${
                 isActive ? 'text-primary' : 'text-on-surface-variant'
               }`
             }

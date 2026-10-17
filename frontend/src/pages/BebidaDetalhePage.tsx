@@ -91,7 +91,7 @@ export default function BebidaDetalhePage() {
   return (
     <div>
       {/* hero */}
-      <section className="relative flex min-h-[480px] items-end overflow-hidden lg:min-h-[560px]">
+      <section className="relative flex min-h-[400px] items-end overflow-hidden pt-20 sm:min-h-[480px] lg:min-h-[560px] baixa:min-h-0">
         <div className="absolute inset-0">
           <BebidaImagem bebida={bebida} className="brightness-50" />
           <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/30 to-black/30" />
@@ -103,18 +103,18 @@ export default function BebidaDetalhePage() {
         >
           <Icon name="arrow_back" />
         </button>
-        <div className="relative z-10 mx-auto w-full max-w-container-max px-5 pb-14 md:px-10 xl:px-margin-desktop">
+        <div className="relative z-10 mx-auto w-full max-w-container-max 2xl:max-w-[1560px] px-5 pb-10 sm:pb-14 md:px-10 xl:px-margin-desktop">
           <div className="mb-5 flex flex-wrap gap-2">
             <TipoTag>{vinho ? 'Vinho' : 'Drink'}</TipoTag>
             {vinho && bebida.tipoVinho && <TipoTag>{bebida.tipoVinho}</TipoTag>}
             {!vinho && bebida.baseAlcoolica && <TipoTag>{bebida.baseAlcoolica}</TipoTag>}
             {bebida.criadoUser && <TipoTag>Cadastrada pela comunidade</TipoTag>}
           </div>
-          <h1 className="hyphens-auto break-words font-display-lg text-[36px] leading-[1.05] sm:text-[44px] md:text-[84px]">{bebida.nome}</h1>
+          <h1 className="hyphens-auto break-words font-display-lg text-[36px] leading-[1.05] sm:text-[44px] md:text-[64px] xl:text-[84px]">{bebida.nome}</h1>
           {bebida.descricao && (
-            <p className="mt-5 max-w-2xl font-body-lg text-body-lg text-on-surface-variant">{bebida.descricao}</p>
+            <p className="mt-3 max-w-2xl text-on-surface-variant sm:mt-5 sm:font-body-lg sm:text-body-lg">{bebida.descricao}</p>
           )}
-          <div className="mt-6 flex flex-wrap items-center gap-4">
+          <div className="mt-4 flex flex-wrap items-center gap-4 sm:mt-6">
             <div className="flex items-center gap-2">
               <Estrelas nota={bebida.notaMedia} tamanho="text-xl" />
               <span className="font-headline-md text-headline-md text-primary">{formatarNota(bebida.notaMedia)}</span>
@@ -124,20 +124,20 @@ export default function BebidaDetalhePage() {
             </span>
           </div>
           {usuario && !carregandoMinha && (
-            <button onClick={irParaAvaliacao} className="btn-primary mt-8">
+            <button onClick={irParaAvaliacao} className="btn-primary mt-6 sm:mt-8">
               <Icon name={minha ? 'edit' : 'star'} fill={!minha} /> {minha ? 'Editar minha avaliação' : 'Avaliar esta bebida'}
             </button>
           )}
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-container-max gap-12 px-5 py-14 md:px-10 xl:px-margin-desktop xl:grid-cols-12">
+      <div className="mx-auto grid max-w-container-max 2xl:max-w-[1560px] gap-10 px-5 py-10 sm:gap-12 sm:py-14 md:px-10 xl:px-margin-desktop xl:grid-cols-12">
         {/* coluna principal */}
-        <div className="space-y-14 xl:col-span-7">
+        <div className="space-y-10 sm:space-y-14 xl:col-span-7">
           <section>
-            <div className="mb-6 flex items-center gap-4">
+            <div className="mb-4 flex items-center gap-4 sm:mb-6">
               <div className="h-px w-12 bg-primary" />
-              <h2 className="font-display-lg text-headline-lg text-primary">{vinho ? 'O rótulo' : 'Ingredientes'}</h2>
+              <h2 className="font-display-lg text-headline-lg-mobile text-primary md:text-headline-lg">{vinho ? 'O rótulo' : 'Ingredientes'}</h2>
             </div>
             <div className="space-y-4">
               {vinho ? (
@@ -149,21 +149,25 @@ export default function BebidaDetalhePage() {
               ) : (
                 <>
                   <Info rotulo="Base alcoólica" valor={bebida.baseAlcoolica} icone="liquor" />
-                  {ingredientes.map((ing) => (
-                    <div key={ing} className="glass-card flex items-center gap-4 rounded-2xl px-5 py-4">
-                      <Icon name="water_drop" className="text-primary" />
-                      <span className="font-body-lg text-body-lg">{ing}</span>
-                    </div>
-                  ))}
+                  {ingredientes.length > 0 && (
+                    <ul className="flex flex-wrap gap-2" aria-label="Ingredientes">
+                      {ingredientes.map((ing) => (
+                        <li key={ing} className="glass-card flex items-center gap-2 rounded-full px-4 py-2">
+                          <Icon name="water_drop" className="text-lg text-primary" />
+                          <span className="first-letter:uppercase">{ing}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </>
               )}
             </div>
           </section>
 
           <section>
-            <div className="mb-6 flex items-center gap-4">
+            <div className="mb-4 flex items-center gap-4 sm:mb-6">
               <div className="h-px w-12 bg-primary" />
-              <h2 className="font-display-lg text-headline-lg text-primary">Onde encontrar</h2>
+              <h2 className="font-display-lg text-headline-lg-mobile text-primary md:text-headline-lg">Onde encontrar</h2>
             </div>
             {bebida.locais.length === 0 ? (
               <p className="text-on-surface-variant">Nenhum local cadastrado serve esta bebida ainda.</p>
@@ -201,7 +205,7 @@ export default function BebidaDetalhePage() {
 
           <section id="avaliar" className="scroll-mt-20 space-y-5">
             <div className="flex items-center justify-between">
-              <h2 className="font-display-lg text-headline-lg">Avaliações</h2>
+              <h2 className="font-display-lg text-headline-lg-mobile md:text-headline-lg">Avaliações</h2>
               {minha && !editando && (
                 <button onClick={() => setEditando(true)} className="text-sm text-primary hover:underline">
                   Editar a minha
@@ -234,10 +238,10 @@ export default function BebidaDetalhePage() {
               <p className="text-on-surface-variant">Ninguém avaliou ainda. Seja o primeiro!</p>
             ) : (
               bebida.avaliacoes.map((a) => (
-                <article key={a.id} className="glass-card space-y-3 rounded-2xl p-6">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-variant font-label-md text-primary">
+                <article key={a.id} className="glass-card space-y-3 rounded-2xl p-5 sm:p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-variant font-label-md text-primary">
                         {a.user?.nome?.[0]?.toUpperCase() ?? '?'}
                       </div>
                       <div>

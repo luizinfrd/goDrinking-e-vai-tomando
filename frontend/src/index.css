@@ -125,14 +125,14 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 font-label-md text-label-md uppercase tracking-widest text-on-primary-fixed shadow-[0_12px_24px_rgba(212,139,69,0.2)] transition-all hover:scale-[1.02] hover:bg-primary-fixed active:scale-95 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-label-md sm:px-8 sm:py-4 text-label-md uppercase tracking-widest text-on-primary-fixed shadow-[0_12px_24px_rgba(212,139,69,0.2)] transition-all hover:scale-[1.02] hover:bg-primary-fixed active:scale-95 disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-outline/50 px-6 py-3 font-label-md text-label-md uppercase tracking-widest text-on-surface backdrop-blur-md transition-all hover:border-primary/60 hover:text-primary disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-outline/50 px-5 py-3 font-label-md sm:px-6 text-label-md uppercase tracking-widest text-on-surface backdrop-blur-md transition-all hover:border-primary/60 hover:text-primary disabled:pointer-events-none disabled:opacity-50;
   }
 
   .chip {
-    @apply inline-flex min-h-11 items-center justify-center rounded-full bg-surface-container px-5 py-2 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant transition-all hover:text-primary;
+    @apply inline-flex min-h-11 items-center justify-center rounded-full bg-surface-container px-4 py-2 font-label-sm sm:px-5 text-label-sm uppercase tracking-wider text-on-surface-variant transition-all hover:text-primary;
   }
   .chip-active {
     @apply border border-primary/40 bg-primary/10 text-primary shadow-[0_0_18px_rgba(212,140,69,0.25)];
