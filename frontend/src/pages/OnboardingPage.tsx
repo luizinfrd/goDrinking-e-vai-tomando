@@ -110,10 +110,10 @@ export default function OnboardingPage() {
       </div>
 
       <header className="flex h-16 items-center justify-between border-b border-surface-variant/10 px-5 pt-[env(safe-area-inset-top)] md:h-20 md:px-margin-desktop">
-        <Logo />
+        <Logo className="text-headline-md md:text-headline-lg" />
         {refazendo && (
           <button onClick={() => navigate(-1)} className="-mr-2 flex min-h-11 items-center gap-2 px-2 text-on-surface-variant hover:text-primary">
-            <Icon name="close" /> Cancelar
+            <Icon name="close" /> <span className="sr-only xs:not-sr-only">Cancelar</span>
           </button>
         )}
       </header>
@@ -154,7 +154,7 @@ export default function OnboardingPage() {
           </div>
           <p className="-mt-3 mb-6 text-sm text-on-surface-variant md:-mt-4 md:mb-8 md:text-body-md">{pergunta.subtitulo}</p>
 
-          <div className="grid gap-3 md:grid-cols-3 md:gap-6">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-6">
             {pergunta.opcoes.map((op) => {
               const ativa = respostas[pergunta.chave] === op.valor;
               return (
@@ -196,14 +196,14 @@ export default function OnboardingPage() {
           </p>
         )}
 
-        <footer className="sticky bottom-0 -mx-5 mt-8 flex items-center justify-between border-t border-surface-variant/20 bg-obsidian/90 px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl md:static md:mx-0 md:mt-14 md:bg-transparent md:px-0 md:pb-0 md:pt-8 md:backdrop-blur-none">
+        <footer className="sticky bottom-0 -mx-5 mt-8 flex items-center justify-between gap-3 border-t border-surface-variant/20 bg-obsidian/90 px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 backdrop-blur-xl md:static md:mx-0 md:mt-14 md:bg-transparent md:px-0 md:pb-0 md:pt-8 md:backdrop-blur-none">
           <button
             type="button"
             onClick={() => setPasso((p) => Math.max(0, p - 1))}
             disabled={passo === 0}
             className="-ml-2 flex min-h-11 items-center gap-2 px-2 font-label-md text-label-md uppercase tracking-widest text-on-surface-variant transition-colors hover:text-primary disabled:opacity-30"
           >
-            <Icon name="arrow_back" /> Voltar
+            <Icon name="arrow_back" /> <span className="sr-only xs:not-sr-only">Voltar</span>
           </button>
           <button type="button" onClick={avancar} disabled={salvando} className="btn-primary sm:px-10">
             {salvando ? (

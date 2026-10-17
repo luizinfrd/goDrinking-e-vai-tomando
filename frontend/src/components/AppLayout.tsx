@@ -124,7 +124,7 @@ export function AppLayout() {
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-label-sm uppercase tracking-wider baixa:min-h-11 baixa:flex-row baixa:gap-2 baixa:py-1 ${
+              `flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 py-2 text-[10px] uppercase tracking-normal xs:text-label-sm xs:tracking-wider baixa:min-h-11 baixa:flex-row baixa:gap-2 baixa:py-1 ${
                 isActive ? 'text-primary' : 'text-on-surface-variant'
               }`
             }

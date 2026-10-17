@@ -12,11 +12,11 @@ import type { Avaliacao, BebidaDetalhe } from '../lib/types';
 function Info({ rotulo, valor, icone }: { rotulo: string; valor?: string | null; icone: string }) {
   if (!valor) return null;
   return (
-    <div className="glass-card shine-border flex items-center gap-5 rounded-2xl p-5">
+    <div className="glass-card shine-border flex items-center gap-4 rounded-2xl p-4 sm:gap-5 sm:p-5">
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface-container-highest/60">
         <Icon name={icone} className="text-2xl text-primary" />
       </div>
-      <div>
+      <div className="min-w-0">
         <p className="font-label-sm text-label-sm uppercase tracking-widest text-outline">{rotulo}</p>
         <p className="font-headline-md text-headline-md">{valor}</p>
       </div>
@@ -131,12 +131,12 @@ export default function BebidaDetalhePage() {
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-container-max 2xl:max-w-[1560px] gap-10 px-5 py-10 sm:gap-12 sm:py-14 md:px-10 xl:px-margin-desktop xl:grid-cols-12">
+      <div className="mx-auto grid max-w-container-max grid-cols-1 2xl:max-w-[1560px] gap-10 px-5 py-10 sm:gap-12 sm:py-14 md:px-10 xl:px-margin-desktop xl:grid-cols-12">
         {/* coluna principal */}
         <div className="space-y-10 sm:space-y-14 xl:col-span-7">
           <section>
-            <div className="mb-4 flex items-center gap-4 sm:mb-6">
-              <div className="h-px w-12 bg-primary" />
+            <div className="mb-4 flex items-center gap-3 sm:mb-6 sm:gap-4">
+              <div className="h-px w-8 shrink-0 bg-primary sm:w-12" />
               <h2 className="font-display-lg text-headline-lg-mobile text-primary md:text-headline-lg">{vinho ? 'O rótulo' : 'Ingredientes'}</h2>
             </div>
             <div className="space-y-4">
@@ -165,14 +165,14 @@ export default function BebidaDetalhePage() {
           </section>
 
           <section>
-            <div className="mb-4 flex items-center gap-4 sm:mb-6">
-              <div className="h-px w-12 bg-primary" />
+            <div className="mb-4 flex items-center gap-3 sm:mb-6 sm:gap-4">
+              <div className="h-px w-8 shrink-0 bg-primary sm:w-12" />
               <h2 className="font-display-lg text-headline-lg-mobile text-primary md:text-headline-lg">Onde encontrar</h2>
             </div>
             {bebida.locais.length === 0 ? (
               <p className="text-on-surface-variant">Nenhum local cadastrado serve esta bebida ainda.</p>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {bebida.locais.map(({ local }) => (
                   <Link
                     key={local.id}

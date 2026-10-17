@@ -124,8 +124,8 @@ export default function MeuBarPage() {
           </div>
           {erro && <p className="mt-3 text-sm text-error" role="alert">{erro}</p>}
         </div>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <Link to="/bebidas" className="btn-primary shrink-0">
+        <div className="flex flex-wrap gap-3 xl:shrink-0">
+          <Link to="/bebidas" className="btn-primary">
             <Icon name="add" /> Avaliar uma bebida
           </Link>
           <button onClick={sair} className="btn-ghost lg:hidden">
@@ -154,7 +154,7 @@ export default function MeuBarPage() {
         </Stat>
       </section>
 
-      <section className="mt-8 grid gap-4 md:mt-12 md:gap-6 xl:grid-cols-12">
+      <section className="mt-8 grid grid-cols-1 gap-4 md:mt-12 md:gap-6 xl:grid-cols-12">
         <div className="glass-card shine-border space-y-6 rounded-[32px] p-6 md:p-8 xl:col-span-7">
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
             <div>

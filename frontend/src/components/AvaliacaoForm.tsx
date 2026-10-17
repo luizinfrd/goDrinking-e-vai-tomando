@@ -41,11 +41,11 @@ export function AvaliacaoForm({ bebidaId, existente, onSalvo, onCancelar }: Prop
   }
 
   return (
-    <form onSubmit={enviar} className="glass-card shine-border space-y-5 rounded-2xl p-6">
+    <form onSubmit={enviar} className="glass-card shine-border space-y-5 rounded-2xl p-4 xs:p-6">
       <div>
         <p className="font-label-sm text-label-sm uppercase tracking-widest text-outline">Sua nota</p>
-        <div className="mt-2 flex items-center gap-4">
-          <Estrelas nota={nota} onChange={setNota} tamanho="text-3xl" />
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+          <Estrelas nota={nota} onChange={setNota} tamanho="text-2xl xs:text-3xl" />
           <span className="text-sm text-primary">{ROTULOS_NOTA[nota]}</span>
         </div>
       </div>

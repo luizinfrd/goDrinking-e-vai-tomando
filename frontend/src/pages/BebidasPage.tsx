@@ -52,7 +52,7 @@ export default function BebidasPage() {
             aria-label="Buscar bebida por nome"
           />
         </label>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="mr-2 hidden font-label-sm text-label-sm uppercase tracking-widest text-outline md:inline">Tipo:</span>
           {FILTROS.map((f) => (
             <button

@@ -95,7 +95,7 @@ export default function NovaBebidaPage() {
         </div>
 
         {tipo === 'drink' ? (
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <div className="group">
               <label className="field-label" htmlFor="base">Base alcoólica *</label>
               <input id="base" className="input-line" value={baseAlcoolica} onChange={(e) => setBaseAlcoolica(e.target.value)} placeholder="Gin, Rum, Cachaça..." />
@@ -106,7 +106,7 @@ export default function NovaBebidaPage() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             <div className="group">
               <label className="field-label" htmlFor="tipoVinho">Estilo *</label>
               <select id="tipoVinho" className="input-line" value={tipoVinho} onChange={(e) => setTipoVinho(e.target.value)}>

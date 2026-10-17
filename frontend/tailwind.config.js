@@ -6,7 +6,10 @@ export default {
   theme: {
     extend: {
       // telas baixas (celular deitado): topo, barra inferior e heroes mais compactos
+      // com um screen "raw" o Tailwind desativa as variantes max-[...]/min-[...]; por isso existe o xs.
+      // xs vem depois dos padrões no css: use só em propriedades que sm/md/lg não alteram
       screens: {
+        xs: '360px',
         baixa: { raw: '(max-height: 500px)' },
       },
       colors: {

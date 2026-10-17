@@ -167,7 +167,7 @@ export function Estrelas({
 
   return (
     <div
-      className={`flex items-center ${onChange ? '-mx-1.5' : 'gap-0.5'}`}
+      className={`flex items-center ${onChange ? '-mx-2 flex-wrap' : 'gap-0.5'}`}
       onMouseLeave={() => setHover(0)}
       {...(onChange
         ? { role: 'radiogroup', 'aria-label': 'Sua nota' }
@@ -188,7 +188,7 @@ export function Estrelas({
             aria-label={`${n} estrela${n > 1 ? 's' : ''}`}
             onMouseEnter={() => setHover(n)}
             onClick={() => onChange(n)}
-            className="p-1.5 transition-transform hover:scale-125"
+            className="p-2 transition-transform hover:scale-125"
           >
             {estrela}
           </button>

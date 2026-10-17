@@ -23,9 +23,9 @@ type LocalRecomendado = Omit<LocalComBebidas, 'bebidas'> & {
 
 function Compatibilidade({ score }: { score: number }) {
   return (
-    <span className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-primary/15 px-3 py-1 font-label-sm text-label-sm text-primary">
+    <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-primary/15 px-3 py-1 font-label-sm text-label-sm text-primary">
       <Icon name="auto_awesome" fill className="text-sm" />
-      {Math.round(score * 100)}% compatível
+      {Math.round(score * 100)}%<span className="sr-only xs:not-sr-only">&nbsp;compatível</span>
     </span>
   );
 }
@@ -136,7 +136,7 @@ export default function RecomendacoesPage() {
                   : 'Baseado nas respostas do seu onboarding. Avalie as bebidas que provar para refinar as sugestões.'}
               </p>
             </div>
-            <div className="flex gap-2" role="group" aria-label="Filtrar por tipo">
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
               {FILTROS.map((f) => (
                 <button
                   key={f.valor}

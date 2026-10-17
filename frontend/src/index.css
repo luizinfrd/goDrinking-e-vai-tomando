@@ -54,6 +54,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
+    overflow-wrap: break-word;
   }
 
   /* foco visível padronizado para navegação por teclado */
@@ -156,10 +157,10 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-label-md sm:px-8 sm:py-4 text-label-md uppercase tracking-widest text-on-primary-fixed shadow-[0_12px_24px_rgba(212,139,69,0.2)] transition-all hover:scale-[1.02] hover:bg-primary-fixed active:scale-95 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex max-w-full items-center justify-center gap-2 rounded-full bg-primary text-center px-6 py-3.5 font-label-md sm:px-8 sm:py-4 text-label-md uppercase tracking-widest text-on-primary-fixed shadow-[0_12px_24px_rgba(212,139,69,0.2)] transition-all hover:scale-[1.02] hover:bg-primary-fixed active:scale-95 disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-outline/50 px-5 py-3 font-label-md sm:px-6 text-label-md uppercase tracking-widest text-on-surface backdrop-blur-md transition-all hover:border-primary/60 hover:text-primary disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex max-w-full items-center justify-center gap-2 rounded-full border border-outline/50 text-center px-5 py-3 font-label-md sm:px-6 text-label-md uppercase tracking-widest text-on-surface backdrop-blur-md transition-all hover:border-primary/60 hover:text-primary disabled:pointer-events-none disabled:opacity-50;
   }
 
   .chip {
