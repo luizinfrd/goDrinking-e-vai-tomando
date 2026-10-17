@@ -51,12 +51,7 @@ npm run build        # tsc --noEmit && vite build (use para validar)
 
 Health check: `GET http://localhost:3000/health`. Usuário demo do seed: `demo@godrinking.com` / `demo12345` (onboarding concluído e algumas avaliações).
 
-### Ambiente da máquina do Augusto (Windows 11)
-
-- **Docker não está instalado.** Usa-se o **Postgres local** em `localhost:5432` (banco, usuário e senha `godrinking`).
-- **Python não está instalado.** O alias do `python` aponta para a Microsoft Store. Para scripts auxiliares, use **Node**.
-- Terminais disponíveis: PowerShell 5.1 e Git Bash.
-- Normalmente a API (:3000) e o Vite (:5173) já estão rodando. Antes de subir outra instância, verifique as portas (`netstat -an | grep -E ':3000 |:5173 '`).
+Particularidades do ambiente de cada pessoa (SO, Docker ou Postgres local, ferramentas instaladas) ficam no `CLAUDE.local.md` de cada um, que não é versionado.
 
 ## Arquitetura do backend
 

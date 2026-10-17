@@ -28,5 +28,6 @@ Thumbs.db
 # ferramentas de IA
 .windsurf/
 .claude/
+CLAUDE.local.md
 .agents/
 skills-lock.json
