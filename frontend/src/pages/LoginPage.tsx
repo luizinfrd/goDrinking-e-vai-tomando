@@ -39,9 +39,9 @@ export default function LoginPage() {
 
   return (
     <AuthShell decoracao="Beba melhor">
-      <div className="glass-panel ambient-glow rounded-2xl p-8 md:p-12">
+      <div className="glass-panel ambient-glow rounded-2xl p-6 sm:p-8 md:p-12">
         <div className="mb-10 text-center">
-          <Logo className="text-display-lg" />
+          <Logo className="text-headline-lg sm:text-display-lg" />
           <p className="mt-2 font-label-md text-label-md uppercase tracking-widest text-on-surface-variant">
             Seu paladar, suas descobertas
           </p>
@@ -73,14 +73,14 @@ export default function LoginPage() {
                 type={mostrarSenha ? 'text' : 'password'}
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="input-line pr-10"
+                className="input-line pr-12"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
               />
               <button
                 type="button"
                 onClick={() => setMostrarSenha((v) => !v)}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-outline transition-colors hover:text-primary"
+                className="absolute -right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-outline transition-colors hover:text-primary"
                 aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
               >
                 <Icon name={mostrarSenha ? 'visibility_off' : 'visibility'} />

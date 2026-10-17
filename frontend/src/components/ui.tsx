@@ -1,6 +1,7 @@
 // componentes visuais pequenos reutilizados pelas páginas
 import { ReactNode, useState } from 'react';
 import type { Bebida, BebidaResumo, Local } from '../lib/types';
+import { formatarNota } from '../lib/sabor';
 
 export function Icon({ name, fill = false, className = '' }: { name: string; fill?: boolean; className?: string }) {
   return (
@@ -98,6 +99,24 @@ export function BebidaImagem({
   );
 }
 
+// placeholder com o formato do card enquanto a primeira carga não chega (evita pulo de layout)
+export function GradeSkeleton({ quantidade = 6, rotulo = 'Carregando...' }: { quantidade?: number; rotulo?: string }) {
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3" role="status" aria-label={rotulo}>
+      {Array.from({ length: quantidade }, (_, i) => (
+        <div key={i} className="overflow-hidden rounded-2xl border border-surface-variant/10 bg-surface-container/40">
+          <div className="h-48 animate-pulse bg-surface-container-high" />
+          <div className="space-y-3 p-6">
+            <div className="h-6 w-2/3 animate-pulse rounded bg-surface-container-high" />
+            <div className="h-3 w-1/3 animate-pulse rounded bg-surface-container-high" />
+            <div className="h-3 w-full animate-pulse rounded bg-surface-container-high" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // foto do local com fallback em gradiente + ícone do tipo de estabelecimento
 const ICONE_LOCAL: Record<string, string> = { bar: 'local_bar', restaurante: 'restaurant', adega: 'wine_bar' };
 
@@ -147,21 +166,29 @@ export function Estrelas({
   const exibida = hover || nota;
 
   return (
-    <div className="flex items-center gap-0.5" onMouseLeave={() => setHover(0)}>
+    <div
+      className={`flex items-center ${onChange ? '-mx-1.5' : 'gap-0.5'}`}
+      onMouseLeave={() => setHover(0)}
+      {...(onChange
+        ? { role: 'radiogroup', 'aria-label': 'Sua nota' }
+        : { role: 'img', 'aria-label': `Nota ${formatarNota(nota)} de 5` })}
+    >
       {[1, 2, 3, 4, 5].map((n) => {
         const cheia = exibida >= n - 0.25;
         const estrela = (
-          <Icon name="star" fill={cheia} className={`${tamanho} ${cheia ? 'text-primary' : 'text-surface-variant'}`} />
+          <Icon name="star" fill={cheia} className={`${tamanho} ${cheia ? 'text-primary' : 'text-outline/60'}`} />
         );
         if (!onChange) return <span key={n}>{estrela}</span>;
         return (
           <button
             key={n}
             type="button"
+            role="radio"
+            aria-checked={nota === n}
             aria-label={`${n} estrela${n > 1 ? 's' : ''}`}
             onMouseEnter={() => setHover(n)}
             onClick={() => onChange(n)}
-            className="transition-transform hover:scale-125"
+            className="p-1.5 transition-transform hover:scale-125"
           >
             {estrela}
           </button>

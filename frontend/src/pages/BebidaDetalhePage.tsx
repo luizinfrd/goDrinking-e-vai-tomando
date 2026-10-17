@@ -1,6 +1,6 @@
 // detalhe da bebida: perfil sensorial, dados por tipo, onde encontrar e avaliações (RF09, RF13)
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { AvaliacaoForm } from '../components/AvaliacaoForm';
 import { BarraSabor, BebidaImagem, ErroBox, Estrelas, Icon, Spinner, TipoTag } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -27,8 +27,11 @@ function Info({ rotulo, valor, icone }: { rotulo: string; valor?: string | null;
 export default function BebidaDetalhePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { usuario, refreshMe } = useAuth();
   const [minha, setMinha] = useState<Avaliacao | null>(null);
+  // evita mostrar o form vazio antes de saber se o usuário já avaliou (causaria 409 e pulo de layout)
+  const [carregandoMinha, setCarregandoMinha] = useState(true);
   const [editando, setEditando] = useState(false);
   const [acabouDeAvaliar, setAcabouDeAvaliar] = useState(false);
 
@@ -42,9 +45,11 @@ export default function BebidaDetalhePage() {
     setMinha(null);
     setEditando(false);
     setAcabouDeAvaliar(false);
+    setCarregandoMinha(true);
     api<Avaliacao[]>('/avaliacoes/minhas')
       .then((lista) => setMinha(lista.find((a) => a.bebidaId === id) ?? null))
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setCarregandoMinha(false));
   }, [id]);
 
   // atualiza nota média e lista sem recarregar a página
@@ -52,10 +57,22 @@ export default function BebidaDetalhePage() {
     setMinha(avaliacao);
     setEditando(false);
     setAcabouDeAvaliar(true);
-    const atualizada = await api<BebidaDetalhe>(`/bebidas/${id}`);
-    setDados(atualizada);
+    try {
+      setDados(await api<BebidaDetalhe>(`/bebidas/${id}`));
+    } catch {
+      // a avaliação já foi salva; só a nota média exibida fica desatualizada
+    }
     refreshMe().catch(() => undefined);
   }
+
+  // leva até o formulário (no mobile ele fica no fim da página)
+  function irParaAvaliacao() {
+    if (minha) setEditando(true);
+    document.getElementById('avaliar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // aberto por link direto não há histórico no app: volta para o catálogo
+  const voltar = () => (location.key === 'default' ? navigate('/bebidas') : navigate(-1));
 
   if (carregando && !bebida) return <Spinner />;
   if (erro || !bebida) {
@@ -80,20 +97,20 @@ export default function BebidaDetalhePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/30 to-black/30" />
         </div>
         <button
-          onClick={() => navigate(-1)}
+          onClick={voltar}
           className="glass-panel absolute left-5 top-6 z-10 flex h-11 w-11 items-center justify-center rounded-full md:left-margin-desktop"
           aria-label="Voltar"
         >
           <Icon name="arrow_back" />
         </button>
-        <div className="relative z-10 w-full max-w-container-max px-5 pb-14 md:px-margin-desktop">
+        <div className="relative z-10 mx-auto w-full max-w-container-max px-5 pb-14 md:px-10 xl:px-margin-desktop">
           <div className="mb-5 flex flex-wrap gap-2">
             <TipoTag>{vinho ? 'Vinho' : 'Drink'}</TipoTag>
             {vinho && bebida.tipoVinho && <TipoTag>{bebida.tipoVinho}</TipoTag>}
             {!vinho && bebida.baseAlcoolica && <TipoTag>{bebida.baseAlcoolica}</TipoTag>}
             {bebida.criadoUser && <TipoTag>Cadastrada pela comunidade</TipoTag>}
           </div>
-          <h1 className="font-display-lg text-[44px] leading-[1.05] md:text-[84px]">{bebida.nome}</h1>
+          <h1 className="hyphens-auto break-words font-display-lg text-[36px] leading-[1.05] sm:text-[44px] md:text-[84px]">{bebida.nome}</h1>
           {bebida.descricao && (
             <p className="mt-5 max-w-2xl font-body-lg text-body-lg text-on-surface-variant">{bebida.descricao}</p>
           )}
@@ -106,12 +123,17 @@ export default function BebidaDetalhePage() {
               {bebida._count.avaliacoes} {bebida._count.avaliacoes === 1 ? 'avaliação' : 'avaliações'}
             </span>
           </div>
+          {usuario && !carregandoMinha && (
+            <button onClick={irParaAvaliacao} className="btn-primary mt-8">
+              <Icon name={minha ? 'edit' : 'star'} fill={!minha} /> {minha ? 'Editar minha avaliação' : 'Avaliar esta bebida'}
+            </button>
+          )}
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-container-max gap-12 px-5 py-14 md:px-margin-desktop lg:grid-cols-12">
+      <div className="mx-auto grid max-w-container-max gap-12 px-5 py-14 md:px-10 xl:px-margin-desktop xl:grid-cols-12">
         {/* coluna principal */}
-        <div className="space-y-14 lg:col-span-7">
+        <div className="space-y-14 xl:col-span-7">
           <section>
             <div className="mb-6 flex items-center gap-4">
               <div className="h-px w-12 bg-primary" />
@@ -166,10 +188,10 @@ export default function BebidaDetalhePage() {
         </div>
 
         {/* coluna lateral */}
-        <aside className="space-y-10 lg:col-span-5">
-          <div className="glass-card shine-border space-y-6 rounded-[32px] p-8 lg:sticky lg:top-8">
+        <aside className="space-y-10 xl:col-span-5">
+          <div className="glass-card shine-border space-y-6 rounded-[32px] p-6 sm:p-8 xl:sticky xl:top-8">
             <div>
-              <h3 className="font-display-lg text-headline-md">Arquitetura de sabor</h3>
+              <h2 className="font-display-lg text-headline-md">Arquitetura de sabor</h2>
               <p className="text-sm text-on-surface-variant">O perfil sensorial usado pelo algoritmo de recomendação</p>
             </div>
             {atributos.map((a) => (
@@ -177,9 +199,9 @@ export default function BebidaDetalhePage() {
             ))}
           </div>
 
-          <section className="space-y-5">
+          <section id="avaliar" className="scroll-mt-20 space-y-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-display-lg text-headline-lg">Avaliações</h3>
+              <h2 className="font-display-lg text-headline-lg">Avaliações</h2>
               {minha && !editando && (
                 <button onClick={() => setEditando(true)} className="text-sm text-primary hover:underline">
                   Editar a minha
@@ -187,7 +209,7 @@ export default function BebidaDetalhePage() {
               )}
             </div>
 
-            {usuario && (!minha || editando) && (
+            {usuario && !carregandoMinha && (!minha || editando) && (
               <AvaliacaoForm
                 bebidaId={bebida.id}
                 existente={editando ? minha : null}

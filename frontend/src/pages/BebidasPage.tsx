@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BebidaCard } from '../components/BebidaCard';
-import { EstadoVazio, ErroBox, Icon, Spinner } from '../components/ui';
+import { EstadoVazio, ErroBox, GradeSkeleton, Icon } from '../components/ui';
 import { useDebounce, useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
 import type { Bebida } from '../lib/types';
@@ -26,7 +26,7 @@ export default function BebidasPage() {
   );
 
   return (
-    <div className="mx-auto max-w-container-max px-5 py-12 md:px-margin-desktop">
+    <div className="mx-auto max-w-container-max px-5 py-12 md:px-10 xl:px-margin-desktop">
       <header className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div className="max-w-2xl">
           <span className="eyebrow">Enciclopédia</span>
@@ -48,7 +48,7 @@ export default function BebidasPage() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar por nome..."
-            className="w-full rounded-full border border-surface-variant/30 bg-surface-container-low py-3 pl-12 pr-5 text-on-surface placeholder:text-outline focus:border-primary focus:outline-none focus:ring-0"
+            className="input-busca text-body-md text-on-surface"
             aria-label="Buscar bebida por nome"
           />
         </label>
@@ -68,7 +68,7 @@ export default function BebidasPage() {
       </div>
 
       {carregando && !bebidas ? (
-        <Spinner />
+        <GradeSkeleton rotulo="Carregando bebidas" />
       ) : erro ? (
         <ErroBox mensagem={erro.message} onTentar={recarregar} />
       ) : !bebidas || bebidas.length === 0 ? (
@@ -87,7 +87,7 @@ export default function BebidasPage() {
           <p className="mb-6 font-label-sm text-label-sm uppercase tracking-widest text-outline">
             {bebidas.length} {bebidas.length === 1 ? 'bebida' : 'bebidas'}
           </p>
-          <div className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ${carregando ? 'opacity-60' : ''}`}>
+          <div className={`grid gap-6 sm:grid-cols-2 xl:grid-cols-3 ${carregando ? 'opacity-60' : ''}`}>
             {bebidas.map((b) => (
               <BebidaCard
                 key={b.id}

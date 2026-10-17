@@ -46,9 +46,9 @@ export function AppLayout() {
     }`;
 
   return (
-    <div className="min-h-screen bg-obsidian">
+    <div className="min-h-dvh bg-obsidian">
       {/* sidebar desktop */}
-      <aside className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col gap-8 border-r border-surface-variant/10 bg-surface-container-lowest px-6 py-8 lg:flex">
+      <aside className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col gap-8 overflow-y-auto border-r border-surface-variant/10 bg-surface-container-lowest px-6 py-8 lg:flex">
         <NavLink to="/">
           <Logo />
         </NavLink>
@@ -59,11 +59,11 @@ export function AppLayout() {
           </div>
           <div className="min-w-0">
             <p className="truncate font-label-md text-label-md text-on-surface">{usuario?.nome}</p>
-            <p className="truncate text-[11px] uppercase tracking-widest text-outline">Explorador de sabores</p>
+            <p className="truncate text-label-sm uppercase tracking-widest text-outline">Explorador de sabores</p>
           </div>
         </div>
 
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-1" aria-label="Navegação principal">
           {NAV_PRINCIPAL.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.end} className={classeItem}>
               {({ isActive }) => (
@@ -94,33 +94,37 @@ export function AppLayout() {
       </aside>
 
       {/* topo mobile */}
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-surface-variant/10 bg-obsidian/80 px-5 backdrop-blur-xl lg:hidden">
+      <header className="sticky top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between border-b border-surface-variant/10 bg-obsidian/80 px-5 pt-[env(safe-area-inset-top)] backdrop-blur-xl lg:hidden">
         <NavLink to="/">
           <Logo className="text-headline-md" />
         </NavLink>
-        <div className="flex items-center gap-1">
-          <NavLink to="/minhas-avaliacoes" className="p-2 text-on-surface-variant" aria-label="Minhas avaliações">
-            <Icon name="history" />
-          </NavLink>
-          <button onClick={sair} className="p-2 text-on-surface-variant" aria-label="Sair">
-            <Icon name="logout" />
-          </button>
-        </div>
+        <NavLink
+          to="/minhas-avaliacoes"
+          className={({ isActive }) =>
+            `-mr-2 flex h-11 w-11 items-center justify-center rounded-full ${isActive ? 'text-primary' : 'text-on-surface-variant'}`
+          }
+          aria-label="Minhas avaliações"
+        >
+          <Icon name="history" />
+        </NavLink>
       </header>
 
-      <main className="pb-24 lg:ml-64 lg:pb-0">
+      <main className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:ml-64 lg:pb-0">
         <Outlet />
       </main>
 
       {/* navegação inferior mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-4 border-t border-surface-variant/10 bg-surface-container-lowest/95 backdrop-blur-xl lg:hidden">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-4 border-t border-surface-variant/10 bg-surface-container-lowest/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+        aria-label="Navegação principal"
+      >
         {NAV_PRINCIPAL.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 py-3 text-[11px] uppercase tracking-wider ${
+              `flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-label-sm uppercase tracking-wider ${
                 isActive ? 'text-primary' : 'text-on-surface-variant'
               }`
             }

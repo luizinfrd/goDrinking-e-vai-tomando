@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
   return (
     <AuthShell decoracao="Misture com arte">
-      <div className="glass-panel rounded-2xl p-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] md:p-12">
+      <div className="glass-panel rounded-2xl p-6 shadow-[0_32px_64px_rgba(0,0,0,0.5)] sm:p-8 md:p-12">
         <div className="mb-10">
           <Logo />
           <h1 className="mt-6 font-display-lg text-headline-lg">Crie sua conta</h1>
@@ -102,14 +102,14 @@ export default function RegisterPage() {
                 type={mostrarSenha ? 'text' : 'password'}
                 autoComplete="new-password"
                 placeholder="Mínimo de 8 caracteres"
-                className="input-line pr-10"
+                className="input-line pr-12"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
               />
               <button
                 type="button"
                 onClick={() => setMostrarSenha((v) => !v)}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-outline transition-colors hover:text-primary"
+                className="absolute -right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-outline transition-colors hover:text-primary"
                 aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
               >
                 <Icon name={mostrarSenha ? 'visibility_off' : 'visibility'} />

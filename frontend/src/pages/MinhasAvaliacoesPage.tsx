@@ -38,7 +38,7 @@ export default function MinhasAvaliacoesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-container-max px-5 py-12 md:px-margin-desktop">
+    <div className="mx-auto max-w-container-max px-5 py-12 md:px-10 xl:px-margin-desktop">
       <span className="eyebrow">Histórico</span>
       <h1 className="mt-3 font-display-lg text-headline-lg-mobile md:text-display-lg">Minhas avaliações</h1>
       <p className="mt-4 max-w-2xl text-on-surface-variant">
@@ -85,14 +85,14 @@ export default function MinhasAvaliacoesPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setEditando(editando === a.id ? null : a.id)}
-                      className="rounded-full p-2 text-on-surface-variant hover:bg-surface-variant/30 hover:text-primary"
+                      className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-variant/30 hover:text-primary"
                       aria-label="Editar avaliação"
                     >
                       <Icon name="edit" />
                     </button>
                     <button
                       onClick={() => excluir(a)}
-                      className="rounded-full p-2 text-on-surface-variant hover:bg-surface-variant/30 hover:text-error"
+                      className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-variant/30 hover:text-error"
                       aria-label="Excluir avaliação"
                     >
                       <Icon name="delete" />

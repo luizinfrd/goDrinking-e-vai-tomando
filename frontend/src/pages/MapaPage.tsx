@@ -118,6 +118,7 @@ export default function MapaPage() {
               key={l.id}
               position={[l.latitude!, l.longitude!]}
               icon={iconeLocal(l.id === selecionado)}
+              title={l.nome}
               eventHandlers={{ click: () => setSelecionado(l.id) }}
               ref={(m) => {
                 marcadores.current[l.id] = m;
@@ -146,15 +147,16 @@ export default function MapaPage() {
         </MapContainer>
 
         {/* filtros flutuantes */}
-        <div className="pointer-events-none absolute left-4 right-4 top-4 z-[500] flex flex-wrap items-center gap-2 md:left-6 md:top-6">
-          <div className="glass-panel pointer-events-auto flex items-center gap-2 rounded-full px-4 py-2 text-primary">
+        <div className="pointer-events-none absolute left-0 right-0 top-4 z-[500] flex items-center gap-2 overflow-x-auto px-4 [scrollbar-width:none] md:left-6 md:right-6 md:top-6 md:flex-wrap md:overflow-visible md:px-0">
+          <div className="glass-panel pointer-events-auto hidden items-center gap-2 rounded-full px-4 py-2 text-primary sm:flex">
             <Icon name="tune" /> <span className="font-label-sm text-label-sm uppercase tracking-widest">Ambiente</span>
           </div>
           {['', ...tipos].map((t) => (
             <button
               key={t || 'todos'}
               onClick={() => setTipo(t)}
-              className={`pointer-events-auto rounded-full px-4 py-2 font-label-sm text-label-sm uppercase tracking-wider backdrop-blur-xl transition-all ${
+              aria-pressed={tipo === t}
+              className={`pointer-events-auto min-h-11 shrink-0 rounded-full px-4 py-2 font-label-sm text-label-sm uppercase tracking-wider backdrop-blur-xl transition-all ${
                 tipo === t ? 'bg-primary text-on-primary' : 'glass-panel text-on-surface-variant hover:text-primary'
               }`}
             >
@@ -175,7 +177,7 @@ export default function MapaPage() {
       </div>
 
       {/* painel de resultados */}
-      <aside className="flex w-full flex-col border-l border-surface-variant/10 bg-surface-container-lowest lg:h-full lg:w-[400px]">
+      <aside className="flex w-full flex-col border-l border-surface-variant/10 bg-surface-container-lowest lg:h-full lg:w-[320px] xl:w-[400px]">
         <div className="space-y-4 border-b border-surface-variant/10 p-6">
           <div>
             <h1 className="font-display-lg text-headline-md">Descubra</h1>
@@ -191,7 +193,8 @@ export default function MapaPage() {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar por nome ou bebida..."
-              className="w-full rounded-full border border-surface-variant/30 bg-surface-container-low py-3 pl-12 pr-4 text-sm placeholder:text-outline focus:border-primary focus:outline-none focus:ring-0"
+              className="input-busca"
+              aria-label="Buscar locais por nome ou bebida"
             />
           </label>
         </div>

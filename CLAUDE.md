@@ -111,6 +111,8 @@ As fotos ficam em `frontend/public/img/{bebidas,locais}/` e são ligadas pelo ma
 - **`lib/sabor.ts`:** `DIMENSOES`, `saborDaBebida`, `subtituloBebida` e formatadores (`formatarNota`, `formatarData`, `capitalizar`).
 - **`components/ui.tsx`:** `Icon` (Material Symbols), `Spinner`, `ErroBox`, `EstadoVazio`, `BebidaImagem`, `Estrelas`, `BarraSabor` e `TipoTag`. Reaproveite esses componentes antes de criar novos.
 - **Visual:** tema escuro "Obsidian & Amber", com os tokens do Stitch em [tailwind.config.js](frontend/tailwind.config.js). Use os tokens (`bg-surface-container`, `text-on-surface`, `text-primary`, `font-headline-md`, `text-label-sm`...) e **não cores hex soltas**. Fontes: Bodoni Moda nos títulos e Manrope no texto.
+- **Ícones:** Material Symbols servido como **subset local** (`public/fonts/material-symbols-subset.woff2`, só com os ícones usados). **Ao usar um ícone novo, regenere o subset incluindo o nome**, senão ele aparece como texto. A URL e as instruções estão no topo de `src/index.css`.
+- **Responsividade:** a sidebar ocupa 256px a partir de `lg`, então layouts de 3 colunas ou 12 colunas entram só em `xl:`. O padding lateral é `px-5 md:px-10 xl:px-margin-desktop`. Use `min-h-dvh` (não `min-h-screen`) e respeite `env(safe-area-inset-*)` em elementos fixos. Alvos de toque têm no mínimo 44px (`h-11 w-11`).
 - `VITE_API_URL` tem o padrão `http://localhost:3000/api`.
 
 ## Git

@@ -57,7 +57,7 @@ export default function NovaBebidaPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-12 md:px-margin-desktop">
+    <div className="mx-auto max-w-3xl px-5 py-12 md:px-10 xl:px-margin-desktop">
       <Link to="/bebidas" className="mb-8 inline-flex items-center gap-2 text-on-surface-variant hover:text-primary">
         <Icon name="arrow_back" /> Catálogo
       </Link>

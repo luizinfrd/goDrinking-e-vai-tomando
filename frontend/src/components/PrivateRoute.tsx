@@ -13,7 +13,7 @@ export function PrivateRoute({ exigeOnboarding = true }: { exigeOnboarding?: boo
 
   if (carregando) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-obsidian">
+      <div className="flex min-h-dvh items-center justify-center bg-obsidian">
         <Spinner texto="Preparando seu bar..." />
       </div>
     );
@@ -22,7 +22,7 @@ export function PrivateRoute({ exigeOnboarding = true }: { exigeOnboarding?: boo
   // token salvo, mas a API não respondeu (ex.: backend fora do ar)
   if (!perfil) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-obsidian p-6">
+      <div className="flex min-h-dvh items-center justify-center bg-obsidian p-6">
         <ErroBox
           mensagem="Não foi possível carregar seu perfil. Verifique se a API está rodando."
           onTentar={() => refreshMe().catch(() => undefined)}

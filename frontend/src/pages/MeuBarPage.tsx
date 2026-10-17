@@ -47,6 +47,11 @@ export default function MeuBarPage() {
     }
   }
 
+  function sair() {
+    logout();
+    navigate('/login');
+  }
+
   async function excluirConta() {
     const ok = window.confirm(
       'Excluir sua conta permanentemente? Todas as suas avaliações e preferências serão apagadas. Essa ação não pode ser desfeita.'
@@ -62,8 +67,8 @@ export default function MeuBarPage() {
   }
 
   return (
-    <div className="mx-auto max-w-container-max px-5 py-12 md:px-margin-desktop">
-      <header className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+    <div className="mx-auto max-w-container-max px-5 py-12 md:px-10 xl:px-margin-desktop">
+      <header className="mb-12 flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
         <div>
           {editandoNome ? (
             <form onSubmit={salvarNome} className="flex items-center gap-3">
@@ -74,44 +79,47 @@ export default function MeuBarPage() {
                 className="input-line font-display-lg text-headline-lg"
                 aria-label="Seu nome"
               />
-              <button type="submit" className="rounded-full bg-primary p-2 text-on-primary" aria-label="Salvar nome">
+              <button type="submit" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary" aria-label="Salvar nome">
                 <Icon name="check" />
               </button>
-              <button type="button" onClick={() => setEditandoNome(false)} className="p-2 text-outline" aria-label="Cancelar">
+              <button type="button" onClick={() => setEditandoNome(false)} className="flex h-11 w-11 shrink-0 items-center justify-center text-outline" aria-label="Cancelar">
                 <Icon name="close" />
               </button>
             </form>
           ) : (
-            <h1 className="flex items-center gap-3 font-display-lg text-headline-lg-mobile md:text-display-lg">
+            <h1 className="flex items-center gap-1 break-words font-display-lg text-headline-lg-mobile md:text-display-lg">
               {perfil.nome}
               <button
                 onClick={() => {
                   setNome(perfil.nome);
                   setEditandoNome(true);
                 }}
-                className="text-outline hover:text-primary"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-outline hover:text-primary"
                 aria-label="Editar nome"
               >
                 <Icon name="edit" />
               </button>
             </h1>
           )}
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-on-surface-variant">
             {dominante && (
               <span className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-primary">
                 <Icon name="verified" fill className="text-base" /> Paladar {dominante.rotulo.toLowerCase()}
               </span>
             )}
-            <span>•</span>
-            <span>{perfil.email}</span>
-            <span>•</span>
+            <span className="break-all">{perfil.email}</span>
             <span>Membro desde {desde}</span>
           </div>
-          {erro && <p className="mt-3 text-sm text-error">{erro}</p>}
+          {erro && <p className="mt-3 text-sm text-error" role="alert">{erro}</p>}
         </div>
-        <Link to="/bebidas" className="btn-primary shrink-0">
-          <Icon name="add" /> Avaliar uma bebida
-        </Link>
+        <div className="flex shrink-0 flex-wrap gap-3">
+          <Link to="/bebidas" className="btn-primary shrink-0">
+            <Icon name="add" /> Avaliar uma bebida
+          </Link>
+          <button onClick={sair} className="btn-ghost lg:hidden">
+            <Icon name="logout" /> Sair da conta
+          </button>
+        </div>
       </header>
 
       <section className="grid gap-6 md:grid-cols-3">
@@ -134,11 +142,11 @@ export default function MeuBarPage() {
         </Stat>
       </section>
 
-      <section className="mt-12 grid gap-6 lg:grid-cols-12">
-        <div className="glass-card shine-border space-y-6 rounded-[32px] p-8 lg:col-span-7">
-          <div className="flex items-start justify-between gap-4">
+      <section className="mt-12 grid gap-6 xl:grid-cols-12">
+        <div className="glass-card shine-border space-y-6 rounded-[32px] p-6 md:p-8 xl:col-span-7">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
             <div>
-              <h2 className="font-display-lg text-headline-lg">Seu perfil de paladar</h2>
+              <h2 className="font-display-lg text-headline-lg-mobile md:text-headline-lg">Seu perfil de paladar</h2>
               <p className="text-sm text-on-surface-variant">
                 Vetor atual usado na similaridade cosseno — combina o onboarding com suas avaliações.
               </p>
@@ -153,7 +161,7 @@ export default function MeuBarPage() {
             ))}
         </div>
 
-        <div className="flex flex-col gap-6 lg:col-span-5">
+        <div className="flex flex-col gap-6 xl:col-span-5">
           <div className="glass-panel rounded-2xl p-8">
             <h3 className="font-headline-md text-headline-md">Como funciona</h3>
             <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">

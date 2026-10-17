@@ -28,7 +28,7 @@ export default function LocalDetalhePage() {
       : null;
 
   return (
-    <div className="mx-auto max-w-container-max px-5 py-12 md:px-margin-desktop">
+    <div className="mx-auto max-w-container-max px-5 py-12 md:px-10 xl:px-margin-desktop">
       <Link to="/mapa" className="mb-8 inline-flex items-center gap-2 text-on-surface-variant hover:text-primary">
         <Icon name="arrow_back" /> Mapa
       </Link>
@@ -65,7 +65,7 @@ export default function LocalDetalhePage() {
           {local.bebidas.length === 0 ? (
             <EstadoVazio icone="no_drinks" titulo="Nenhuma bebida cadastrada" texto="Este local ainda não tem bebidas associadas." />
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {local.bebidas.map((b) => (
                 <BebidaCard key={b.id} bebida={b} />
               ))}
