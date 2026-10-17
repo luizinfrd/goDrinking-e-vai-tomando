@@ -111,6 +111,9 @@
   background: #0e0e0f;
   font-family: Manrope, sans-serif;
 }
+.tiles-escuros {
+  filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(0.95) saturate(0.35);
+}
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
   background: rgba(28, 27, 28, 0.95);

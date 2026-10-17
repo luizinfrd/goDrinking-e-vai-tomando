@@ -103,7 +103,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-obsidian">
+    <div className="relative min-h-screen overflow-clip bg-obsidian">
       <div className="pointer-events-none absolute -right-40 top-20 h-[520px] w-[520px] rounded-full bg-primary/5 blur-[140px]" />
 
       <header className="flex h-20 items-center justify-between border-b border-surface-variant/10 px-5 md:px-margin-desktop">

@@ -104,9 +104,11 @@ export default function MapaPage() {
     <div className="flex flex-col lg:h-screen lg:flex-row">
       <div className="relative h-[60vh] flex-1 lg:h-full">
         <MapContainer center={CENTRO_PADRAO} zoom={13} className="h-full w-full" zoomControl={false}>
+          {/* tiles padrão do OSM escurecidos via css (.tiles-escuros) para seguir o tema */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            className="tiles-escuros"
           />
           <Voar alvo={alvo?.coords ?? null} zoom={alvo?.zoom ?? 13} />
           {posicaoUsuario && <Marker position={posicaoUsuario} icon={iconeUsuario} />}

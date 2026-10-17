@@ -23,7 +23,7 @@ type LocalRecomendado = Omit<LocalComBebidas, 'bebidas'> & {
 
 function Compatibilidade({ score }: { score: number }) {
   return (
-    <span className="flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 font-label-sm text-label-sm text-primary">
+    <span className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-primary/15 px-3 py-1 font-label-sm text-label-sm text-primary">
       <Icon name="auto_awesome" fill className="text-sm" />
       {Math.round(score * 100)}% compatível
     </span>
