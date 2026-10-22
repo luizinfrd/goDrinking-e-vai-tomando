@@ -191,7 +191,7 @@ export default function RecomendacoesPage() {
                   : 'Baseado nas respostas do seu onboarding. Avalie as bebidas que provar para refinar as sugestões.'}
               </p>
             </div>
-            <div className="flex flex-col gap-3 md:items-end">
+            <div className="flex flex-col gap-3 md:shrink-0 md:items-end">
               <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
                 {FILTROS.map((f) => (
                   <button
