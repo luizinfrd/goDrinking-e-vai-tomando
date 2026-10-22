@@ -316,7 +316,8 @@ async function main() {
   const demo = await prisma.user.upsert({
     where: { email: DEMO.email },
     create: { nome: DEMO.nome, email: DEMO.email, senha: senhaHash, preferences: { create: {} } },
-    update: { nome: DEMO.nome, senha: senhaHash },
+    // demo já existente mantém a senha atual
+    update: { nome: DEMO.nome },
   });
   await preferenciaService.salvarOnboarding(demo.id, DEMO.onboarding);
 

@@ -1,4 +1,6 @@
 node_modules
 dist
+test
+vitest.config.mts
 .env
 *.log

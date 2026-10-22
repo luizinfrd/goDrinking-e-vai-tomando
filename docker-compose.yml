@@ -1,4 +1,5 @@
 # sobe banco + API + front com: docker compose up --build
+# popula o catálogo (idempotente): docker compose --profile seed run --rm seed
 # para desenvolvimento local, basta o banco: docker compose up -d db
 services:
   db:
@@ -19,7 +20,9 @@ services:
       retries: 10
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: runtime
     container_name: godrinking-backend
     depends_on:
       db:
@@ -33,6 +36,19 @@ services:
       CORS_ORIGIN: http://localhost:8080,http://localhost:5173
     ports:
       - "3000:3000"
+
+  # roda só sob demanda; não sobrescreve a senha do demo nem roda a cada start da API
+  seed:
+    build:
+      context: ./backend
+      target: build
+    profiles: ["seed"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://godrinking:godrinking@db:5432/godrinking?schema=public
+    command: ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed"]
 
   frontend:
     build:

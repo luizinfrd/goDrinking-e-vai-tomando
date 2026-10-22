@@ -1,4 +1,6 @@
-FROM node:22-alpine
+# estágio de build: dependências de desenvolvimento, client do prisma e compilação do typescript.
+# também é usado pelo serviço "seed" do compose (precisa do tsx e do código-fonte)
+FROM node:22-alpine AS build
 
 # openssl é exigido pelo engine do prisma no alpine
 RUN apk add --no-cache openssl
@@ -15,7 +17,26 @@ COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
 
+# estágio final: só dependências de produção e o js compilado
+FROM node:22-alpine AS runtime
+
+RUN apk add --no-cache openssl
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+COPY prisma ./prisma
+RUN npx prisma generate
+
+COPY --from=build /app/dist ./dist
+
+USER node
 EXPOSE 3000
 
-# aplica as migrations, popula o catálogo (idempotente) e sobe a API
-CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/server.js"]
+HEALTHCHECK --interval=10s --timeout=3s --start-period=20s CMD wget -qO- http://127.0.0.1:3000/health || exit 1
+
+# aplica as migrations e sobe a API (o seed é manual: docker compose --profile seed run --rm seed)
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]
