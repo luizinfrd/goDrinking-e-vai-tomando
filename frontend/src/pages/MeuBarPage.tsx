@@ -1,6 +1,7 @@
 // perfil do usuário: estatísticas, vetor de paladar e gestão da conta (RF04, RF06)
 import { FormEvent, ReactNode, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Pagina } from '../components/Pagina';
 import { BarraSabor, Icon, Spinner } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { api, mensagemDeErro } from '../lib/api';
@@ -37,6 +38,7 @@ export default function MeuBarPage() {
   const [editandoNome, setEditandoNome] = useState(false);
   const [nome, setNome] = useState(perfil?.nome ?? '');
   const [erro, setErro] = useState('');
+  const [salvandoNome, setSalvandoNome] = useState(false);
 
   if (!perfil) return <Spinner />;
 
@@ -48,7 +50,8 @@ export default function MeuBarPage() {
 
   async function salvarNome(e: FormEvent) {
     e.preventDefault();
-    if (!nome.trim()) return;
+    if (!nome.trim() || salvandoNome) return;
+    setSalvandoNome(true);
     try {
       await api('/usuarios/me', { method: 'PUT', body: { nome: nome.trim() } });
       await refreshMe();
@@ -56,6 +59,8 @@ export default function MeuBarPage() {
       setErro('');
     } catch (err) {
       setErro(mensagemDeErro(err));
+    } finally {
+      setSalvandoNome(false);
     }
   }
 
@@ -79,7 +84,7 @@ export default function MeuBarPage() {
   }
 
   return (
-    <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 py-8 md:px-10 md:py-12 xl:px-margin-desktop">
+    <Pagina>
       <header className="mb-8 flex flex-col md:mb-12 justify-between gap-6 xl:flex-row xl:items-end">
         <div>
           {editandoNome ? (
@@ -91,7 +96,7 @@ export default function MeuBarPage() {
                 className="input-line font-display-lg text-headline-lg"
                 aria-label="Seu nome"
               />
-              <button type="submit" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary" aria-label="Salvar nome">
+              <button type="submit" disabled={salvandoNome} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary" aria-label="Salvar nome">
                 <Icon name="check" />
               </button>
               <button type="button" onClick={() => setEditandoNome(false)} className="flex h-11 w-11 shrink-0 items-center justify-center text-outline" aria-label="Cancelar">
@@ -192,6 +197,6 @@ export default function MeuBarPage() {
           </div>
         </div>
       </section>
-    </div>
+    </Pagina>
   );
 }

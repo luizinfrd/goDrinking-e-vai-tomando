@@ -1,5 +1,6 @@
 // detalhe do local com as bebidas disponíveis
 import { Link, useParams } from 'react-router-dom';
+import { Pagina } from '../components/Pagina';
 import { BebidaCard } from '../components/BebidaCard';
 import { EstadoVazio, ErroBox, Icon, LocalImagem, Spinner, TipoTag } from '../components/ui';
 import { useFetch } from '../hooks/useFetch';
@@ -28,7 +29,7 @@ export default function LocalDetalhePage() {
       : null;
 
   return (
-    <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 py-8 md:px-10 md:py-12 xl:px-margin-desktop">
+    <Pagina>
       <Link to="/mapa" className="mb-3 inline-flex min-h-11 items-center gap-2 md:mb-6 text-on-surface-variant hover:text-primary">
         <Icon name="arrow_back" /> Mapa
       </Link>
@@ -73,6 +74,6 @@ export default function LocalDetalhePage() {
           )}
         </div>
       </section>
-    </div>
+    </Pagina>
   );
 }

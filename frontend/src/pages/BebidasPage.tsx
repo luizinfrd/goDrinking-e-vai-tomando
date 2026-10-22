@@ -2,22 +2,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BebidaCard } from '../components/BebidaCard';
+import { Pagina } from '../components/Pagina';
 import { EstadoVazio, ErroBox, GradeSkeleton, Icon } from '../components/ui';
 import { useDebounce, useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
+import { filtrosDeTipo, FiltroTipo } from '../lib/filtros';
 import type { Bebida } from '../lib/types';
 
-type Filtro = '' | 'drink' | 'vinho';
-
-const FILTROS: { valor: Filtro; rotulo: string }[] = [
-  { valor: '', rotulo: 'Todas' },
-  { valor: 'drink', rotulo: 'Drinks' },
-  { valor: 'vinho', rotulo: 'Vinhos' },
-];
+const FILTROS = filtrosDeTipo('Todas');
 
 export default function BebidasPage() {
   const [busca, setBusca] = useState('');
-  const [tipo, setTipo] = useState<Filtro>('');
+  const [tipo, setTipo] = useState<FiltroTipo>('');
   const termo = useDebounce(busca.trim(), 300);
 
   const { dados: bebidas, carregando, erro, recarregar } = useFetch(
@@ -26,7 +22,7 @@ export default function BebidasPage() {
   );
 
   return (
-    <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 py-8 md:px-10 md:py-12 xl:px-margin-desktop">
+    <Pagina>
       <header className="mb-6 flex flex-col justify-between gap-5 md:mb-10 md:flex-row md:items-end md:gap-6">
         <div className="max-w-2xl">
           <span className="eyebrow">Enciclopédia</span>
@@ -102,6 +98,6 @@ export default function BebidasPage() {
           </div>
         </>
       )}
-    </div>
+    </Pagina>
   );
 }

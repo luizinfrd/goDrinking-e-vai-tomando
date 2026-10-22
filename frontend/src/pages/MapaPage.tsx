@@ -12,7 +12,7 @@ import type { LocalComBebidas } from '../lib/types';
 // centro padrão: Campinas/SP
 const CENTRO_PADRAO: [number, number] = [-22.9007, -47.0573];
 
-const iconeLocal = (ativo: boolean) =>
+const criarIconeLocal = (ativo: boolean) =>
   L.divIcon({
     className: '',
     iconSize: [40, 40],
@@ -20,6 +20,10 @@ const iconeLocal = (ativo: boolean) =>
     popupAnchor: [0, -36],
     html: `<div style="display:flex;align-items:center;justify-content:center;width:${ativo ? 40 : 32}px;height:${ativo ? 40 : 32}px;margin:${ativo ? 0 : 4}px;border-radius:9999px;background:${ativo ? '#ffb876' : 'rgba(14,14,15,0.85)'};border:1px solid ${ativo ? '#ffb876' : 'rgba(255,184,118,0.5)'};box-shadow:0 0 14px rgba(212,140,69,0.6);color:${ativo ? '#2d1600' : '#ffb876'}"><span class="material-symbols-outlined icon-fill" style="font-size:${ativo ? 22 : 18}px">local_bar</span></div>`,
   });
+
+// criados uma vez: o marcador não recria o ícone a cada render
+const ICONE_LOCAL = criarIconeLocal(false);
+const ICONE_LOCAL_ATIVO = criarIconeLocal(true);
 
 const iconeUsuario = L.divIcon({
   className: '',
@@ -49,6 +53,9 @@ export default function MapaPage() {
   const [alvo, setAlvo] = useState<{ coords: [number, number]; zoom: number } | null>(null);
   const [avisoGeo, setAvisoGeo] = useState('');
   const marcadores = useRef<Record<string, L.Marker | null>>({});
+  const timerPopup = useRef<number>();
+
+  useEffect(() => () => window.clearTimeout(timerPopup.current), []);
 
   // centraliza na posição do usuário, se ele permitir
   useEffect(() => {
@@ -88,7 +95,9 @@ export default function MapaPage() {
   function focar(local: LocalComBebidas) {
     setSelecionado(local.id);
     setAlvo({ coords: [local.latitude!, local.longitude!], zoom: 15 });
-    setTimeout(() => marcadores.current[local.id]?.openPopup(), 850);
+    // abre o popup depois da animação do flyTo
+    window.clearTimeout(timerPopup.current);
+    timerPopup.current = window.setTimeout(() => marcadores.current[local.id]?.openPopup(), 850);
   }
 
   if (carregando) return <Spinner texto="Carregando mapa..." />;
@@ -117,7 +126,7 @@ export default function MapaPage() {
             <Marker
               key={l.id}
               position={[l.latitude!, l.longitude!]}
-              icon={iconeLocal(l.id === selecionado)}
+              icon={l.id === selecionado ? ICONE_LOCAL_ATIVO : ICONE_LOCAL}
               title={l.nome}
               eventHandlers={{ click: () => setSelecionado(l.id) }}
               ref={(m) => {

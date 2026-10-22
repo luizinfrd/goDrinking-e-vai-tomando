@@ -25,5 +25,7 @@ export const atualizarAvaliacaoSchema = z.object({
   comentario,
 });
 
+export const minhasAvaliacoesSchema = z.object({ bebidaId: id('bebidaId').optional() });
+
 export type CriarAvaliacao = z.infer<typeof criarAvaliacaoSchema>;
 export type AtualizarAvaliacao = z.infer<typeof atualizarAvaliacaoSchema>;

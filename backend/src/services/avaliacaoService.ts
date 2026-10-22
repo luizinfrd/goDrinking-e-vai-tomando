@@ -53,8 +53,8 @@ export const avaliacaoService = {
     return avaliacoes;
   },
 
-  async listarPorUsuario(userId: string) {
-    return avaliacaoRepository.listarPorUsuario(userId);
+  async listarPorUsuario(userId: string, filtros: { bebidaId?: string } = {}) {
+    return avaliacaoRepository.listarPorUsuario(userId, filtros);
   },
 
   // remove e desfaz o efeito na nota média e nas preferências (RF17)

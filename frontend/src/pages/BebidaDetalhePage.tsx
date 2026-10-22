@@ -5,7 +5,7 @@ import { AvaliacaoForm } from '../components/AvaliacaoForm';
 import { BarraSabor, BebidaImagem, ErroBox, Estrelas, Icon, Spinner, TipoTag } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
-import { api } from '../lib/api';
+import { api, mensagemDeErro } from '../lib/api';
 import { capitalizar, DIMENSOES, formatarData, formatarNota } from '../lib/sabor';
 import type { Avaliacao, BebidaDetalhe } from '../lib/types';
 
@@ -32,6 +32,8 @@ export default function BebidaDetalhePage() {
   const [minha, setMinha] = useState<Avaliacao | null>(null);
   // evita mostrar o form vazio antes de saber se o usuário já avaliou (causaria 409 e pulo de layout)
   const [carregandoMinha, setCarregandoMinha] = useState(true);
+  const [erroMinha, setErroMinha] = useState('');
+  const [versaoMinha, setVersaoMinha] = useState(0);
   const [editando, setEditando] = useState(false);
   const [acabouDeAvaliar, setAcabouDeAvaliar] = useState(false);
 
@@ -46,11 +48,19 @@ export default function BebidaDetalhePage() {
     setEditando(false);
     setAcabouDeAvaliar(false);
     setCarregandoMinha(true);
-    api<Avaliacao[]>('/avaliacoes/minhas')
-      .then((lista) => setMinha(lista.find((a) => a.bebidaId === id) ?? null))
-      .catch(() => undefined)
-      .finally(() => setCarregandoMinha(false));
-  }, [id]);
+    setErroMinha('');
+    const controle = new AbortController();
+    api<Avaliacao[]>('/avaliacoes/minhas', { query: { bebidaId: id }, signal: controle.signal })
+      .then((lista) => setMinha(lista[0] ?? null))
+      .catch((e) => {
+        // sem saber se já avaliou, o form poderia criar uma avaliação duplicada (409)
+        if (e?.name !== 'AbortError') setErroMinha(mensagemDeErro(e));
+      })
+      .finally(() => {
+        if (!controle.signal.aborted) setCarregandoMinha(false);
+      });
+    return () => controle.abort();
+  }, [id, versaoMinha]);
 
   // atualiza nota média e lista sem recarregar a página
   async function aoSalvar(avaliacao: Avaliacao) {
@@ -74,7 +84,7 @@ export default function BebidaDetalhePage() {
   // aberto por link direto não há histórico no app: volta para o catálogo
   const voltar = () => (location.key === 'default' ? navigate('/bebidas') : navigate(-1));
 
-  if (carregando && !bebida) return <Spinner />;
+  if (carregando && bebida?.id !== id) return <Spinner />;
   if (erro || !bebida) {
     return (
       <div className="p-10">
@@ -123,7 +133,7 @@ export default function BebidaDetalhePage() {
               {bebida._count.avaliacoes} {bebida._count.avaliacoes === 1 ? 'avaliação' : 'avaliações'}
             </span>
           </div>
-          {usuario && !carregandoMinha && (
+          {usuario && !carregandoMinha && !erroMinha && (
             <button onClick={irParaAvaliacao} className="btn-primary mt-6 sm:mt-8">
               <Icon name={minha ? 'edit' : 'star'} fill={!minha} /> {minha ? 'Editar minha avaliação' : 'Avaliar esta bebida'}
             </button>
@@ -213,7 +223,11 @@ export default function BebidaDetalhePage() {
               )}
             </div>
 
-            {usuario && !carregandoMinha && (!minha || editando) && (
+            {erroMinha && (
+              <ErroBox mensagem={`Não foi possível verificar sua avaliação: ${erroMinha}`} onTentar={() => setVersaoMinha((v) => v + 1)} />
+            )}
+
+            {usuario && !carregandoMinha && !erroMinha && (!minha || editando) && (
               <AvaliacaoForm
                 bebidaId={bebida.id}
                 existente={editando ? minha : null}

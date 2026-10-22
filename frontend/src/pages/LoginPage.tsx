@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthShell } from '../components/AuthShell';
-import { Logo } from '../components/AppLayout';
+import { Logo } from '../components/Logo';
 import { Icon } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { mensagemDeErro } from '../lib/api';

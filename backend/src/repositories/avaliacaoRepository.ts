@@ -24,9 +24,9 @@ export const avaliacaoRepository = {
     return db.avaliacao.findMany({ where: { bebidaId }, include: COM_AUTOR, orderBy: { data: 'desc' } });
   },
 
-  listarPorUsuario(userId: string, db: Db = prisma) {
+  listarPorUsuario(userId: string, filtros: { bebidaId?: string } = {}, db: Db = prisma) {
     return db.avaliacao.findMany({
-      where: { userId },
+      where: { userId, ...(filtros.bebidaId && { bebidaId: filtros.bebidaId }) },
       include: { bebida: { select: { id: true, nome: true, tipo: true, imagemUrl: true, notaMedia: true } } },
       orderBy: { data: 'desc' },
     });

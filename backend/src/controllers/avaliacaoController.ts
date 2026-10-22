@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest, usuarioLogado } from '../middlewares/authMiddleware';
-import { atualizarAvaliacaoSchema, criarAvaliacaoSchema } from '../schemas/avaliacao';
+import { atualizarAvaliacaoSchema, criarAvaliacaoSchema, minhasAvaliacoesSchema } from '../schemas/avaliacao';
 import { paramsComId } from '../schemas/comum';
 import { avaliacaoService } from '../services/avaliacaoService';
 
@@ -22,7 +22,8 @@ export const avaliacaoController = {
   },
 
   async listarPorUsuario(req: AuthRequest, res: Response) {
-    res.status(200).json(await avaliacaoService.listarPorUsuario(usuarioLogado(req)));
+    const filtros = minhasAvaliacoesSchema.parse(req.query);
+    res.status(200).json(await avaliacaoService.listarPorUsuario(usuarioLogado(req), filtros));
   },
 
   async deletar(req: AuthRequest, res: Response) {

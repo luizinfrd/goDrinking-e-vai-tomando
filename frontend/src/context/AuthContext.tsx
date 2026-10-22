@@ -69,14 +69,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         body: { email, senha },
       });
+      // o api() lê o token do localStorage, então ele precisa estar lá para buscar o perfil
       localStorage.setItem(TOKEN_KEY, resposta.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(resposta.user));
-      setUsuario(resposta.user);
-      const me = await refreshMe();
-      setToken(resposta.token);
-      return me!;
+      try {
+        const me = await api<Perfil>('/usuarios/me');
+        const resumo = { id: me.id, nome: me.nome, email: me.email };
+        localStorage.setItem(USER_KEY, JSON.stringify(resumo));
+        setUsuario(resumo);
+        setPerfil(me);
+        setToken(resposta.token);
+        return me;
+      } catch (erro) {
+        // sem perfil o login não se completa: não deixa um token órfão para a próxima abertura do app
+        localStorage.removeItem(TOKEN_KEY);
+        throw erro;
+      }
     },
-    [refreshMe]
+    []
   );
 
   const register = useCallback(

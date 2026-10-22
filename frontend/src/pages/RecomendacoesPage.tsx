@@ -5,16 +5,11 @@ import { BebidaImagem, EstadoVazio, ErroBox, GradeSkeleton, Icon, LocalImagem, T
 import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
 import { api, ApiError } from '../lib/api';
+import { filtrosDeTipo, FiltroTipo } from '../lib/filtros';
 import { formatarNota, subtituloBebida } from '../lib/sabor';
 import type { LocalComBebidas, Recomendacao } from '../lib/types';
 
-type Filtro = '' | 'drink' | 'vinho';
-
-const FILTROS: { valor: Filtro; rotulo: string }[] = [
-  { valor: '', rotulo: 'Todos' },
-  { valor: 'drink', rotulo: 'Drinks' },
-  { valor: 'vinho', rotulo: 'Vinhos' },
-];
+const FILTROS = filtrosDeTipo('Todos');
 
 type LocalRecomendado = Omit<LocalComBebidas, 'bebidas'> & {
   scoreCompatibilidade: number;
@@ -51,7 +46,7 @@ function OndeBeber({ locais }: { locais: Recomendacao['locais'] }) {
 
 export default function RecomendacoesPage() {
   const { usuario, perfil } = useAuth();
-  const [filtro, setFiltro] = useState<Filtro>('');
+  const [filtro, setFiltro] = useState<FiltroTipo>('');
 
   const { dados: recomendacoes, carregando, erro, recarregar } = useFetch(
     (signal) => api<Recomendacao[]>('/recomendacoes', { query: { tipo: filtro || undefined, limite: 13 }, signal }),

@@ -1,7 +1,7 @@
 // onboarding de paladar (RF03): 4 perguntas que inicializam o vetor do usuário
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Logo } from '../components/AppLayout';
+import { Logo } from '../components/Logo';
 import { Icon } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { api, mensagemDeErro } from '../lib/api';

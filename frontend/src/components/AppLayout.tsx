@@ -1,6 +1,7 @@
 // estrutura base das páginas autenticadas: sidebar fixa (desktop) e barra inferior (mobile)
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Logo } from './Logo';
 import { Icon } from './ui';
 
 const NAV_PRINCIPAL = [
@@ -14,14 +15,6 @@ const NAV_SECUNDARIA = [
   { to: '/minhas-avaliacoes', icone: 'history', rotulo: 'Minhas avaliações' },
   { to: '/bebidas/nova', icone: 'add_circle', rotulo: 'Cadastrar bebida' },
 ];
-
-export function Logo({ className = '' }: { className?: string }) {
-  return (
-    <span className={`font-display-lg text-headline-lg tracking-wide text-primary ${className}`}>
-      go<span className="italic">Drinking</span>
-    </span>
-  );
-}
 
 function iniciais(nome?: string) {
   if (!nome) return '?';

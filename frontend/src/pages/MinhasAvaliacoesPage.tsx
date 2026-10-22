@@ -1,6 +1,7 @@
 // histórico do usuário (RF05) com edição e exclusão (RF16, RF17)
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Pagina } from '../components/Pagina';
 import { AvaliacaoForm } from '../components/AvaliacaoForm';
 import { BebidaImagem, EstadoVazio, ErroBox, Estrelas, Icon, Spinner } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -38,7 +39,7 @@ export default function MinhasAvaliacoesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 py-8 md:px-10 md:py-12 xl:px-margin-desktop">
+    <Pagina>
       <span className="eyebrow">Histórico</span>
       <h1 className="mt-3 font-display-lg text-headline-lg-mobile md:text-display-lg">Minhas avaliações</h1>
       <p className="mt-3 max-w-2xl text-on-surface-variant md:mt-4">
@@ -109,6 +110,6 @@ export default function MinhasAvaliacoesPage() {
           </ul>
         )}
       </div>
-    </div>
+    </Pagina>
   );
 }
