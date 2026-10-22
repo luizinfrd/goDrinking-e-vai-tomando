@@ -97,11 +97,60 @@ export type UsuarioGerado = {
   avaliacoes: AvaliacaoGerada[];
 };
 
+// toda bebida termina com pelo menos isto de avaliações com percepção (o gráfico aparece a partir de 3)
+export const PERCEPCOES_POR_BEBIDA = 6;
+
+function avaliar(
+  b: BebidaSeed,
+  onboarding: VetorSabor,
+  locaisPorBebida: Map<string, string[]>,
+  rnd: () => number,
+  { sempreComPercepcao = false } = {}
+): AvaliacaoGerada {
+  const ruido = (amplitude: number) => (rnd() * 2 - 1) * amplitude;
+  const compatibilidade = cosseno(onboarding, b.sabor);
+  const nota = Math.min(5, Math.max(1, Math.round(1 + (4 * (compatibilidade - 0.6)) / 0.4 + ruido(0.8))));
+  const desvio = DESVIOS_DE_PERCEPCAO[b.nome] ?? {};
+  const percepcao =
+    sempreComPercepcao || rnd() < 0.75
+      ? {
+          doce: limitar(b.sabor.doce + (desvio.doce ?? 0) + ruido(0.1)),
+          seco: limitar(b.sabor.seco + (desvio.seco ?? 0) + ruido(0.1)),
+          citrico: limitar(b.sabor.citrico + (desvio.citrico ?? 0) + ruido(0.1)),
+          encorpado: limitar(b.sabor.encorpado + (desvio.encorpado ?? 0) + ruido(0.1)),
+        }
+      : null;
+  const locais = locaisPorBebida.get(b.nome) ?? [];
+  const local = locais.length && rnd() < 0.6 ? locais[Math.floor(rnd() * locais.length)] : null;
+  const opcoes = COMENTARIOS[nota];
+  const comentario = rnd() < 0.5 ? opcoes[Math.floor(rnd() * opcoes.length)] : null;
+  return { bebida: b.nome, nota, comentario, percepcao, local, diasAtras: Math.floor(rnd() * 180) };
+}
+
+/*
+ * completa as bebidas com poucas percepções: quem ainda não avaliou e tem o paladar mais
+ * compatível prova a bebida. gerador separado, para não mudar as avaliações já geradas
+ */
+function completarPercepcoes(comunidade: UsuarioGerado[], bebidas: BebidaSeed[], locaisPorBebida: Map<string, string[]>) {
+  const rnd = aleatorio(20261023);
+  for (const b of bebidas) {
+    const avaliaram = comunidade.filter((u) => u.avaliacoes.some((a) => a.bebida === b.nome));
+    const comPercepcao = avaliaram.filter((u) => u.avaliacoes.some((a) => a.bebida === b.nome && a.percepcao)).length;
+    const faltam = PERCEPCOES_POR_BEBIDA - comPercepcao;
+    if (faltam <= 0) continue;
+    comunidade
+      .filter((u) => !avaliaram.includes(u))
+      .sort((x, y) => cosseno(y.onboarding, b.sabor) - cosseno(x.onboarding, b.sabor))
+      .slice(0, faltam)
+      .forEach((u) => u.avaliacoes.push(avaliar(b, u.onboarding, locaisPorBebida, rnd, { sempreComPercepcao: true })));
+  }
+}
+
 export function gerarComunidade(bebidas: BebidaSeed[], locaisPorBebida: Map<string, string[]>): UsuarioGerado[] {
   const rnd = aleatorio(20261022);
   const ruido = (amplitude: number) => (rnd() * 2 - 1) * amplitude;
 
-  return NOMES.map((nome, i) => {
+  const comunidade = NOMES.map((nome, i) => {
     const arquetipo = ARQUETIPOS[i % ARQUETIPOS.length];
     const onboarding = {
       doce: limitar(arquetipo.doce + ruido(0.1)),
@@ -118,25 +167,7 @@ export function gerarComunidade(bebidas: BebidaSeed[], locaisPorBebida: Map<stri
       .slice(0, quantidade)
       .map((x) => x.b);
 
-    const avaliacoes = escolhidas.map((b) => {
-      const compatibilidade = cosseno(onboarding, b.sabor);
-      const nota = Math.min(5, Math.max(1, Math.round(1 + (4 * (compatibilidade - 0.6)) / 0.4 + ruido(0.8))));
-      const desvio = DESVIOS_DE_PERCEPCAO[b.nome] ?? {};
-      const percepcao =
-        rnd() < 0.75
-          ? {
-              doce: limitar(b.sabor.doce + (desvio.doce ?? 0) + ruido(0.1)),
-              seco: limitar(b.sabor.seco + (desvio.seco ?? 0) + ruido(0.1)),
-              citrico: limitar(b.sabor.citrico + (desvio.citrico ?? 0) + ruido(0.1)),
-              encorpado: limitar(b.sabor.encorpado + (desvio.encorpado ?? 0) + ruido(0.1)),
-            }
-          : null;
-      const locais = locaisPorBebida.get(b.nome) ?? [];
-      const local = locais.length && rnd() < 0.6 ? locais[Math.floor(rnd() * locais.length)] : null;
-      const opcoes = COMENTARIOS[nota];
-      const comentario = rnd() < 0.5 ? opcoes[Math.floor(rnd() * opcoes.length)] : null;
-      return { bebida: b.nome, nota, comentario, percepcao, local, diasAtras: Math.floor(rnd() * 180) };
-    });
+    const avaliacoes = escolhidas.map((b) => avaliar(b, onboarding, locaisPorBebida, rnd));
 
     const email = `${nome
       .normalize('NFD')
@@ -146,4 +177,7 @@ export function gerarComunidade(bebidas: BebidaSeed[], locaisPorBebida: Map<stri
 
     return { nome, email, onboarding, avaliacoes };
   });
+
+  completarPercepcoes(comunidade, bebidas, locaisPorBebida);
+  return comunidade;
 }

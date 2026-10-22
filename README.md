@@ -164,7 +164,8 @@ Criados pelo seed (rodar o seed de novo não troca as senhas):
 
 O seed cadastra **24 drinks**, **20 vinhos**, **8 locais fictícios** e **12 estabelecimentos reais** de Campinas/SP,
 com coordenadas, faixa de preço e harmonizações. A comunidade fictícia é gerada de forma determinística (sempre os mesmos dados) e
-tem avaliações com percepção dos atributos e local onde bebeu. Ela existe para a demo da percepção, da recomendação colaborativa e
+tem avaliações com percepção dos atributos e local onde bebeu; toda bebida recebe pelo menos 6 percepções, então a comparação
+declarado × percebido aparece em todo o catálogo. Ela existe para a demo da percepção, da recomendação colaborativa e
 das métricas: algumas bebidas foram propositalmente "percebidas" diferente do catálogo (ex.: Cosmopolitan mais doce).
 
 > **Estabelecimentos reais:** nome, endereço e coordenadas foram conferidos em fontes públicas em outubro de 2026 (lista abaixo).
