@@ -2,10 +2,45 @@
 import { FormEvent, ReactNode, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Pagina } from '../components/Pagina';
+import { BebidaCard } from '../components/BebidaCard';
+import { RadarSabor } from '../components/RadarSabor';
 import { BarraSabor, Icon, Spinner } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { useFavoritos } from '../context/FavoritosContext';
 import { api, mensagemDeErro } from '../lib/api';
-import { DIMENSOES, formatarNota } from '../lib/sabor';
+import { DIMENSOES, evolucaoDoPaladar, formatarNota } from '../lib/sabor';
+import type { Conquista } from '../lib/types';
+
+function CartaoConquista({ conquista }: { conquista: Conquista }) {
+  const pct = Math.round((conquista.progresso / conquista.meta) * 100);
+  return (
+    <li
+      className={`glass-card flex items-start gap-4 rounded-2xl p-4 sm:p-5 ${conquista.conquistada ? 'shine-border' : 'opacity-70'}`}
+    >
+      <div
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+          conquista.conquistada ? 'bg-primary text-on-primary' : 'bg-surface-container-highest text-outline'
+        }`}
+      >
+        <Icon name={conquista.icone} fill={conquista.conquistada} className="text-2xl" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-headline-md text-[18px] leading-tight">{conquista.titulo}</p>
+        <p className="text-sm text-on-surface-variant">{conquista.descricao}</p>
+        {!conquista.conquistada && (
+          <div className="mt-2 flex items-center gap-2">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-surface-variant">
+              <div className="h-full rounded-full bg-primary/70" style={{ width: `${pct}%` }} />
+            </div>
+            <span className="text-xs text-outline">
+              {conquista.progresso}/{conquista.meta}
+            </span>
+          </div>
+        )}
+      </div>
+    </li>
+  );
+}
 
 function Stat({
   rotulo,
@@ -34,6 +69,7 @@ function Stat({
 
 export default function MeuBarPage() {
   const { perfil, refreshMe, logout } = useAuth();
+  const { favoritos } = useFavoritos();
   const navigate = useNavigate();
   const [editandoNome, setEditandoNome] = useState(false);
   const [nome, setNome] = useState(perfil?.nome ?? '');
@@ -42,7 +78,8 @@ export default function MeuBarPage() {
 
   if (!perfil) return <Spinner />;
 
-  const { estatisticas, preferencias } = perfil;
+  const { estatisticas, preferencias, preferenciasBase, conquistas } = perfil;
+  const conquistadas = conquistas.filter((c) => c.conquistada).length;
   const desde = new Date(perfil.dataCriacao).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const dominante = preferencias
     ? DIMENSOES.reduce((a, b) => (preferencias[b.chave] > preferencias[a.chave] ? b : a))
@@ -133,6 +170,11 @@ export default function MeuBarPage() {
           <Link to="/bebidas" className="btn-primary">
             <Icon name="add" /> Avaliar uma bebida
           </Link>
+          {perfil.papel === 'admin' && (
+            <Link to="/admin" className="btn-ghost lg:hidden">
+              <Icon name="admin_panel_settings" /> Administração
+            </Link>
+          )}
           <button onClick={sair} className="btn-ghost lg:hidden">
             <Icon name="logout" /> Sair da conta
           </button>
@@ -152,9 +194,9 @@ export default function MeuBarPage() {
             ))}
           </div>
         </Stat>
-        <Stat rotulo="Histórico" valor="→" legenda="suas avaliações" largo>
+        <Stat rotulo="Conquistas" valor={`${conquistadas}/${conquistas.length}`} legenda="desbloqueadas" largo>
           <Link to="/minhas-avaliacoes" className="inline-flex min-h-11 items-center text-sm font-bold text-primary hover:underline">
-            Ver, editar ou excluir
+            Ver meu diário de degustação
           </Link>
         </Stat>
       </section>
@@ -172,10 +214,21 @@ export default function MeuBarPage() {
               <Icon name="refresh" /> Refazer
             </Link>
           </div>
-          {preferencias &&
-            DIMENSOES.map((d) => (
-              <BarraSabor key={d.chave} rotulo={d.rotulo} valor={preferencias[d.chave]} destaque={d.chave === dominante?.chave} />
-            ))}
+          {preferencias && (
+            <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2">
+              <div>
+                <RadarSabor atual={preferencias} base={perfil.onboardingConcluido ? preferenciasBase : null} />
+                {perfil.onboardingConcluido && preferenciasBase && (
+                  <p className="mt-4 text-center text-sm text-on-surface-variant">{evolucaoDoPaladar(preferenciasBase, preferencias)}</p>
+                )}
+              </div>
+              <div className="space-y-6">
+                {DIMENSOES.map((d) => (
+                  <BarraSabor key={d.chave} rotulo={d.rotulo} valor={preferencias[d.chave]} destaque={d.chave === dominante?.chave} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-4 md:gap-6 xl:col-span-5">
@@ -196,6 +249,41 @@ export default function MeuBarPage() {
             </button>
           </div>
         </div>
+      </section>
+
+      <section className="mt-10 md:mt-14" aria-labelledby="titulo-quero-provar">
+        <div className="mb-5 flex items-center gap-3 sm:gap-4">
+          <div className="h-px w-8 shrink-0 bg-primary sm:w-12" />
+          <h2 id="titulo-quero-provar" className="font-display-lg text-headline-lg-mobile md:text-headline-lg">
+            Quero provar
+          </h2>
+        </div>
+        {favoritos.length === 0 ? (
+          <p className="text-on-surface-variant">
+            Toque no <Icon name="favorite" className="align-middle text-base text-primary" /> de uma bebida para guardá-la aqui. Os locais que
+            servem suas favoritas ganham destaque nas recomendações.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4">
+            {favoritos.map((b) => (
+              <BebidaCard key={b.id} bebida={b} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mt-10 md:mt-14" aria-labelledby="titulo-conquistas">
+        <div className="mb-5 flex items-center gap-3 sm:gap-4">
+          <div className="h-px w-8 shrink-0 bg-primary sm:w-12" />
+          <h2 id="titulo-conquistas" className="font-display-lg text-headline-lg-mobile md:text-headline-lg">
+            Conquistas
+          </h2>
+        </div>
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+          {conquistas.map((c) => (
+            <CartaoConquista key={c.id} conquista={c} />
+          ))}
+        </ul>
       </section>
     </Pagina>
   );

@@ -1,6 +1,7 @@
 // protege rotas: sem token → login; sem onboarding → questionário de paladar
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { FavoritosProvider } from '../context/FavoritosContext';
 import { ErroBox, Spinner } from './ui';
 
 export function PrivateRoute({ exigeOnboarding = true }: { exigeOnboarding?: boolean }) {
@@ -35,6 +36,17 @@ export function PrivateRoute({ exigeOnboarding = true }: { exigeOnboarding?: boo
     return <Navigate to="/onboarding" replace />;
   }
 
+  return (
+    <FavoritosProvider>
+      <Outlet />
+    </FavoritosProvider>
+  );
+}
+
+// telas de manutenção do catálogo e métricas (a API também exige o papel)
+export function AdminRoute() {
+  const { perfil } = useAuth();
+  if (perfil?.papel !== 'admin') return <Navigate to="/" replace />;
   return <Outlet />;
 }
 

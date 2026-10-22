@@ -6,7 +6,8 @@ import { Link } from 'react-router-dom';
 import { ErroBox, Icon, LocalImagem, Spinner, TipoTag } from '../components/ui';
 import { useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
-import { capitalizar } from '../lib/sabor';
+import { distanciaKm } from '../lib/geo';
+import { capitalizar, formatarDistancia, formatarPreco } from '../lib/sabor';
 import type { LocalComBebidas } from '../lib/types';
 
 // centro padrão: Campinas/SP
@@ -48,6 +49,7 @@ export default function MapaPage() {
   );
   const [tipo, setTipo] = useState('');
   const [busca, setBusca] = useState('');
+  const [precoMax, setPrecoMax] = useState(0);
   const [selecionado, setSelecionado] = useState<string | null>(null);
   const [posicaoUsuario, setPosicaoUsuario] = useState<[number, number] | null>(null);
   const [alvo, setAlvo] = useState<{ coords: [number, number]; zoom: number } | null>(null);
@@ -81,16 +83,24 @@ export default function MapaPage() {
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
-    return (locais ?? []).filter(
-      (l) =>
-        l.latitude !== null &&
-        l.longitude !== null &&
-        (!tipo || l.tipo === tipo) &&
-        (!termo ||
-          l.nome.toLowerCase().includes(termo) ||
-          l.bebidas.some((b) => b.nome.toLowerCase().includes(termo)))
-    );
-  }, [locais, tipo, busca]);
+    const lista = (locais ?? [])
+      .filter(
+        (l) =>
+          l.latitude !== null &&
+          l.longitude !== null &&
+          (!tipo || l.tipo === tipo) &&
+          (!precoMax || (l.faixaPreco !== null && l.faixaPreco <= precoMax)) &&
+          (!termo ||
+            l.nome.toLowerCase().includes(termo) ||
+            l.bebidas.some((b) => b.nome.toLowerCase().includes(termo)))
+      )
+      .map((l) => ({
+        ...l,
+        distancia: posicaoUsuario ? distanciaKm(posicaoUsuario, [l.latitude!, l.longitude!]) : null,
+      }));
+    // com a posição do usuário, os mais próximos primeiro (B4)
+    return posicaoUsuario ? lista.sort((a, b) => a.distancia! - b.distancia!) : lista;
+  }, [locais, tipo, busca, precoMax, posicaoUsuario]);
 
   function focar(local: LocalComBebidas) {
     setSelecionado(local.id);
@@ -138,7 +148,10 @@ export default function MapaPage() {
                   <div className="h-24 overflow-hidden rounded-lg">
                     <LocalImagem local={l} />
                   </div>
-                  <p className="text-[10px] uppercase tracking-widest text-[#d48c45]">{l.tipo ?? 'local'}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#d48c45]">
+                    {l.tipo ?? 'local'}
+                    {l.faixaPreco && ` · ${formatarPreco(l.faixaPreco)}`}
+                  </p>
                   <p className="font-headline-md text-lg leading-tight text-[#ffb876]">{l.nome}</p>
                   {l.bebidas.length > 0 && (
                     <p className="text-xs text-[#d7c3b3]">
@@ -170,6 +183,20 @@ export default function MapaPage() {
               }`}
             >
               {t ? capitalizar(t) : 'Todos'}
+            </button>
+          ))}
+          {/* faixa de preço (B7): "até $$" */}
+          {[0, 1, 2, 3].map((p) => (
+            <button
+              key={`preco-${p}`}
+              onClick={() => setPrecoMax(p)}
+              aria-pressed={precoMax === p}
+              aria-label={p ? `Até ${p} de 4 na faixa de preço` : 'Qualquer preço'}
+              className={`pointer-events-auto min-h-11 shrink-0 rounded-full px-4 py-2 font-label-sm text-label-sm tracking-wider backdrop-blur-xl transition-all ${
+                precoMax === p ? 'bg-primary text-on-primary' : 'glass-panel text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              {p ? `até ${formatarPreco(p)}` : 'Qualquer $'}
             </button>
           ))}
         </div>
@@ -232,8 +259,16 @@ export default function MapaPage() {
                         {l.tipo && <TipoTag>{l.tipo}</TipoTag>}
                       </div>
                       {l.descricao && <p className="mt-2 line-clamp-2 text-sm text-on-surface-variant">{l.descricao}</p>}
-                      <p className="mt-3 flex items-center gap-1 text-xs text-outline">
-                        <Icon name="local_bar" className="text-sm text-primary" /> {l.bebidas.length} bebidas
+                      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-outline">
+                        <span className="flex items-center gap-1">
+                          <Icon name="local_bar" className="text-sm text-primary" /> {l.bebidas.length} bebidas
+                        </span>
+                        {l.distancia !== null && (
+                          <span className="flex items-center gap-1">
+                            <Icon name="near_me" className="text-sm text-primary" /> {formatarDistancia(l.distancia)}
+                          </span>
+                        )}
+                        {l.faixaPreco && <span className="tracking-widest text-primary">{formatarPreco(l.faixaPreco)}</span>}
                       </p>
                     </div>
                   </div>

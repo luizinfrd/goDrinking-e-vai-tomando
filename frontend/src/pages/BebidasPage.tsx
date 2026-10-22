@@ -7,18 +7,20 @@ import { EstadoVazio, ErroBox, GradeSkeleton, Icon } from '../components/ui';
 import { useDebounce, useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
 import { filtrosDeTipo, FiltroTipo } from '../lib/filtros';
-import type { Bebida } from '../lib/types';
+import { HARMONIZACOES } from '../lib/sabor';
+import type { Bebida, Harmonizacao } from '../lib/types';
 
 const FILTROS = filtrosDeTipo('Todas');
 
 export default function BebidasPage() {
   const [busca, setBusca] = useState('');
   const [tipo, setTipo] = useState<FiltroTipo>('');
+  const [harmoniza, setHarmoniza] = useState<Harmonizacao | ''>('');
   const termo = useDebounce(busca.trim(), 300);
 
   const { dados: bebidas, carregando, erro, recarregar } = useFetch(
-    (signal) => api<Bebida[]>('/bebidas', { query: { nome: termo, tipo }, signal }),
-    [termo, tipo]
+    (signal) => api<Bebida[]>('/bebidas', { query: { nome: termo, tipo, harmoniza }, signal }),
+    [termo, tipo, harmoniza]
   );
 
   return (
@@ -63,6 +65,23 @@ export default function BebidasPage() {
         </div>
       </div>
 
+      {/* harmonização (B6): "vou comer X, o que bebo?" */}
+      <div className="-mt-2 mb-6 flex flex-wrap items-center gap-2 md:-mt-4 md:mb-10" role="group" aria-label="Filtrar por harmonização">
+        <span className="mr-2 flex items-center gap-1 font-label-sm text-label-sm uppercase tracking-widest text-outline">
+          <Icon name="restaurant" className="text-base text-primary" /> Vou comer:
+        </span>
+        {HARMONIZACOES.map((h) => (
+          <button
+            key={h.valor}
+            onClick={() => setHarmoniza(harmoniza === h.valor ? '' : h.valor)}
+            aria-pressed={harmoniza === h.valor}
+            className={`chip ${harmoniza === h.valor ? 'chip-active' : ''}`}
+          >
+            {h.rotulo}
+          </button>
+        ))}
+      </div>
+
       {carregando && !bebidas ? (
         <GradeSkeleton rotulo="Carregando bebidas" />
       ) : erro ? (
@@ -71,7 +90,13 @@ export default function BebidasPage() {
         <EstadoVazio
           icone="search_off"
           titulo="Nenhuma bebida encontrada"
-          texto={termo ? `Não encontramos nada para "${termo}". Que tal cadastrá-la?` : 'O catálogo ainda está vazio.'}
+          texto={
+            termo
+              ? `Não encontramos nada para "${termo}". Que tal cadastrá-la?`
+              : harmoniza || tipo
+                ? 'Nenhuma bebida com esses filtros.'
+                : 'O catálogo ainda está vazio.'
+          }
           acao={
             <Link to="/bebidas/nova" className="btn-primary">
               <Icon name="add" /> Cadastrar bebida

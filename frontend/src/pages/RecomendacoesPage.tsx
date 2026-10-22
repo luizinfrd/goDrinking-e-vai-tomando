@@ -1,20 +1,21 @@
 // dashboard: recomendações personalizadas "Beba X no Local Y" (RF22, RF25, RF26)
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import { BotaoCompartilhar } from '../components/BotaoCompartilhar';
+import { CONTAINER } from '../components/Pagina';
+import { ContribuicoesSabor } from '../components/ContribuicoesSabor';
 import { BebidaImagem, EstadoVazio, ErroBox, GradeSkeleton, Icon, LocalImagem, TipoTag } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
-import { api, ApiError } from '../lib/api';
+import { useGeolocalizacao } from '../hooks/useGeolocalizacao';
+import { api, ApiError, mensagemDeErro } from '../lib/api';
 import { filtrosDeTipo, FiltroTipo } from '../lib/filtros';
-import { formatarNota, subtituloBebida } from '../lib/sabor';
-import type { LocalComBebidas, Recomendacao } from '../lib/types';
+import { formatarDistancia, formatarNota, formatarPreco, HARMONIZACOES, subtituloBebida } from '../lib/sabor';
+import type { Avaliacao, Harmonizacao, LocalRecomendado, Recomendacao } from '../lib/types';
 
 const FILTROS = filtrosDeTipo('Todos');
 
-type LocalRecomendado = Omit<LocalComBebidas, 'bebidas'> & {
-  scoreCompatibilidade: number;
-  bebidas: { bebida: { id: string; nome: string; tipo: string } }[];
-};
+type Dispensada = { avaliacaoId: string; nome: string };
 
 function Compatibilidade({ score }: { score: number }) {
   return (
@@ -45,17 +46,62 @@ function OndeBeber({ locais }: { locais: Recomendacao['locais'] }) {
 }
 
 export default function RecomendacoesPage() {
-  const { usuario, perfil } = useAuth();
+  const { usuario, perfil, refreshMe } = useAuth();
   const [filtro, setFiltro] = useState<FiltroTipo>('');
+  const [harmoniza, setHarmoniza] = useState<Harmonizacao | ''>('');
+  const [dispensada, setDispensada] = useState<Dispensada | null>(null);
+  const [erroAcao, setErroAcao] = useState('');
+  const geo = useGeolocalizacao();
 
-  const { dados: recomendacoes, carregando, erro, recarregar } = useFetch(
-    (signal) => api<Recomendacao[]>('/recomendacoes', { query: { tipo: filtro || undefined, limite: 13 }, signal }),
-    [filtro]
+  const { dados: recomendacoes, setDados, carregando, erro, recarregar } = useFetch(
+    (signal) =>
+      api<Recomendacao[]>('/recomendacoes', {
+        query: { tipo: filtro || undefined, harmoniza: harmoniza || undefined, limite: 13 },
+        signal,
+      }),
+    [filtro, harmoniza]
   );
+  const posicao = geo.posicao;
   const { dados: locais } = useFetch(
-    (signal) => api<LocalRecomendado[]>('/recomendacoes/locais', { query: { limite: 3 }, signal }),
-    []
+    (signal) =>
+      api<LocalRecomendado[]>('/recomendacoes/locais', {
+        query: { limite: 3, lat: posicao?.[0], lng: posicao?.[1] },
+        signal,
+      }),
+    [posicao?.[0], posicao?.[1]]
   );
+
+  // o aviso de "desfazer" some sozinho depois de alguns segundos
+  useEffect(() => {
+    if (!dispensada) return;
+    const t = window.setTimeout(() => setDispensada(null), 7000);
+    return () => window.clearTimeout(t);
+  }, [dispensada]);
+
+  // "não é pra mim" (B1b): vira uma avaliação nota 1, que tira a bebida das sugestões e ensina o vetor
+  async function dispensar(r: Recomendacao) {
+    setErroAcao('');
+    try {
+      const avaliacao = await api<Avaliacao>('/avaliacoes', { method: 'POST', body: { bebidaId: r.id, nota: 1 } });
+      setDados((lista) => lista?.filter((x) => x.id !== r.id) ?? null);
+      setDispensada({ avaliacaoId: avaliacao.id, nome: r.nome });
+      refreshMe().catch(() => undefined);
+    } catch (e) {
+      setErroAcao(mensagemDeErro(e));
+    }
+  }
+
+  async function desfazer() {
+    if (!dispensada) return;
+    setDispensada(null);
+    try {
+      await api(`/avaliacoes/${dispensada.avaliacaoId}`, { method: 'DELETE' });
+      recarregar();
+      refreshMe().catch(() => undefined);
+    } catch (e) {
+      setErroAcao(mensagemDeErro(e));
+    }
+  }
 
   if (erro instanceof ApiError && erro.code === 'ONBOARDING_PENDENTE') {
     return <Navigate to="/onboarding" replace />;
@@ -80,7 +126,7 @@ export default function RecomendacoesPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-obsidian/80 to-transparent" />
           </div>
-          <div className="relative z-10 mx-auto w-full max-w-container-max 2xl:max-w-[1560px] px-5 pb-10 sm:pb-16 md:px-10 xl:px-margin-desktop">
+          <div className={`relative z-10 w-full pb-10 sm:pb-16 ${CONTAINER}`}>
             <span className="eyebrow">Sua melhor combinação agora</span>
             <h1 className="mt-4 max-w-3xl hyphens-auto break-words font-display-lg text-[32px] leading-[1.1] sm:text-[40px] md:text-[64px]">
               Beba <span className="italic text-primary">{destaque.nome}</span>
@@ -98,6 +144,7 @@ export default function RecomendacoesPage() {
               <Compatibilidade score={destaque.score} />
               <span className="text-sm text-on-surface-variant">{destaque.motivo}</span>
             </div>
+            <ContribuicoesSabor contribuicoes={destaque.contribuicoes} className="mt-4 max-w-md" />
             <div className="mt-6 flex flex-wrap gap-3 sm:mt-8 sm:gap-4">
               <Link to={`/bebidas/${destaque.id}`} className="btn-primary">
                 <Icon name="local_bar" fill /> Ver detalhes
@@ -107,11 +154,19 @@ export default function RecomendacoesPage() {
                   <Icon name="near_me" /> Ir ao local
                 </Link>
               )}
+              <BotaoCompartilhar
+                titulo={destaque.nome}
+                texto={`O goDrinking acha que eu vou amar ${destaque.nome}. ${destaque.motivo}.`}
+                caminho={`/bebidas/${destaque.id}`}
+              />
+              <button onClick={() => dispensar(destaque)} className="btn-ghost">
+                <Icon name="thumb_down" /> Não é pra mim
+              </button>
             </div>
           </div>
         </section>
       ) : (
-        <header className="mx-auto max-w-container-max 2xl:max-w-[1560px] px-5 pb-4 pt-12 md:px-10 xl:px-margin-desktop">
+        <header className={`pb-4 pt-12 ${CONTAINER}`}>
           <span className="eyebrow">Recomendações</span>
           <h1 className="mt-3 font-display-lg text-headline-lg-mobile md:text-display-lg">
             Olá, {usuario?.nome.split(' ')[0]}
@@ -119,7 +174,12 @@ export default function RecomendacoesPage() {
         </header>
       )}
 
-      <div className="mx-auto max-w-container-max 2xl:max-w-[1560px] space-y-12 px-5 py-8 sm:space-y-16 sm:py-12 md:px-10 xl:px-margin-desktop">
+      <div className={`space-y-12 py-8 sm:space-y-16 sm:py-12 ${CONTAINER}`}>
+        {erroAcao && (
+          <p className="flex items-center gap-2 text-sm text-error" role="alert">
+            <Icon name="error" /> {erroAcao}
+          </p>
+        )}
         <section>
           <div className="mb-6 flex flex-col justify-between gap-4 md:mb-8 md:flex-row md:items-end md:gap-6">
             <div>
@@ -131,17 +191,38 @@ export default function RecomendacoesPage() {
                   : 'Baseado nas respostas do seu onboarding. Avalie as bebidas que provar para refinar as sugestões.'}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
-              {FILTROS.map((f) => (
-                <button
-                  key={f.valor}
-                  aria-pressed={filtro === f.valor}
-                  onClick={() => setFiltro(f.valor)}
-                  className={`chip ${filtro === f.valor ? 'chip-active' : ''}`}
+            <div className="flex flex-col gap-3 md:items-end">
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
+                {FILTROS.map((f) => (
+                  <button
+                    key={f.valor}
+                    aria-pressed={filtro === f.valor}
+                    onClick={() => setFiltro(f.valor)}
+                    className={`chip ${filtro === f.valor ? 'chip-active' : ''}`}
+                  >
+                    {f.rotulo}
+                  </button>
+                ))}
+              </div>
+              <label className="flex items-center gap-2 text-sm text-on-surface-variant">
+                <Icon name="restaurant" className="text-primary" />
+                <span className="shrink-0">Vou comer</span>
+                <select
+                  value={harmoniza}
+                  onChange={(e) => setHarmoniza(e.target.value as Harmonizacao | '')}
+                  className="input-line min-w-0 py-2"
+                  aria-label="Filtrar por harmonização"
                 >
-                  {f.rotulo}
-                </button>
-              ))}
+                  <option value="" className="bg-surface-container">
+                    qualquer coisa
+                  </option>
+                  {HARMONIZACOES.map((h) => (
+                    <option key={h.valor} value={h.valor} className="bg-surface-container">
+                      {h.rotulo.toLowerCase()}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
           </div>
 
@@ -152,8 +233,12 @@ export default function RecomendacoesPage() {
           ) : !recomendacoes || recomendacoes.length === 0 ? (
             <EstadoVazio
               icone="emoji_events"
-              titulo="Você provou tudo por aqui!"
-              texto="Não há bebidas que você ainda não avaliou neste filtro. Cadastre uma nova bebida ou explore outro tipo."
+              titulo={harmoniza ? 'Nada para essa harmonização' : 'Você provou tudo por aqui!'}
+              texto={
+                harmoniza
+                  ? 'Não há bebidas ainda não avaliadas que combinem com esse prato. Tente outro filtro.'
+                  : 'Não há bebidas que você ainda não avaliou neste filtro. Cadastre uma nova bebida ou explore outro tipo.'
+              }
               acao={
                 <Link to="/bebidas/nova" className="btn-primary">
                   <Icon name="add" /> Cadastrar bebida
@@ -197,8 +282,15 @@ export default function RecomendacoesPage() {
                       </p>
                     </div>
                     <p className="line-clamp-2 text-sm italic text-on-surface-variant sm:line-clamp-none">{r.motivo}.</p>
-                    <div className="mt-auto border-t border-surface-variant/20 pt-3">
+                    <ContribuicoesSabor contribuicoes={r.contribuicoes} className="hidden sm:flex" />
+                    <div className="mt-auto space-y-2 border-t border-surface-variant/20 pt-3">
                       <OndeBeber locais={r.locais} />
+                      <button
+                        onClick={() => dispensar(r)}
+                        className="-ml-1 flex min-h-11 items-center gap-2 px-1 text-xs uppercase tracking-widest text-outline hover:text-error"
+                      >
+                        <Icon name="thumb_down" className="text-base" /> Não é pra mim
+                      </button>
                     </div>
                   </div>
                 </article>
@@ -211,7 +303,18 @@ export default function RecomendacoesPage() {
           <section className="-mx-5 bg-surface-container-low px-5 py-10 sm:py-14 md:-mx-10 xl:-mx-margin-desktop md:px-10 xl:px-margin-desktop">
             <span className="eyebrow">Onde ir</span>
             <h2 className="mt-3 font-display-lg text-headline-lg-mobile md:text-headline-lg">Lugares que combinam com você</h2>
-            <p className="mt-2 text-on-surface-variant">Estabelecimentos com mais bebidas compatíveis com o seu perfil.</p>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <p className="text-on-surface-variant">
+                Estabelecimentos com mais bebidas compatíveis com o seu perfil
+                {posicao ? ', considerando a distância até você.' : '.'}
+              </p>
+              {!posicao && (
+                <button onClick={geo.pedir} disabled={geo.pedindo} className="flex min-h-11 items-center gap-2 text-sm font-bold text-primary">
+                  <Icon name="my_location" className="text-base" /> {geo.pedindo ? 'Localizando...' : 'Usar minha localização'}
+                </button>
+              )}
+              {geo.aviso && <span className="text-sm text-outline">{geo.aviso}</span>}
+            </div>
             <div className="mt-6 grid gap-4 sm:mt-8 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
               {locais.map((l) => (
                 <Link
@@ -231,6 +334,19 @@ export default function RecomendacoesPage() {
                       <h3 className="mt-3 font-headline-md text-headline-md">{l.nome}</h3>
                     </div>
                     {l.endereco && <p className="text-sm text-on-surface-variant">{l.endereco}</p>}
+                    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-on-surface-variant">
+                      {l.distanciaKm !== null && (
+                        <span className="flex items-center gap-1">
+                          <Icon name="near_me" className="text-base text-primary" /> a {formatarDistancia(l.distanciaKm)}
+                        </span>
+                      )}
+                      {formatarPreco(l.faixaPreco) && <span className="tracking-widest text-primary">{formatarPreco(l.faixaPreco)}</span>}
+                      {l.favoritasNoLocal > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Icon name="favorite" fill className="text-base text-primary" /> {l.favoritasNoLocal} da sua lista
+                        </span>
+                      )}
+                    </p>
                     <p className="text-sm text-outline">
                       Para você: {l.bebidas.map((b) => b.bebida.nome).slice(0, 3).join(', ')}
                     </p>
@@ -244,6 +360,18 @@ export default function RecomendacoesPage() {
           </section>
         )}
       </div>
+
+      {dispensada && (
+        <div
+          className="fixed inset-x-4 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-surface-container-high px-5 py-3 shadow-xl lg:bottom-8"
+          role="status"
+        >
+          <span className="text-sm">{dispensada.nome} saiu das suas recomendações.</span>
+          <button onClick={desfazer} className="min-h-11 shrink-0 px-2 font-bold text-primary">
+            Desfazer
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './components/AppLayout';
-import { PrivateRoute, PublicOnlyRoute } from './components/PrivateRoute';
+import { AdminRoute, PrivateRoute, PublicOnlyRoute } from './components/PrivateRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import OnboardingPage from './pages/OnboardingPage';
@@ -12,6 +12,9 @@ import MapaPage from './pages/MapaPage';
 import LocalDetalhePage from './pages/LocalDetalhePage';
 import MeuBarPage from './pages/MeuBarPage';
 import MinhasAvaliacoesPage from './pages/MinhasAvaliacoesPage';
+import AdminLocaisPage from './pages/admin/AdminLocaisPage';
+import AdminBebidasPage from './pages/admin/AdminBebidasPage';
+import AdminMetricasPage from './pages/admin/AdminMetricasPage';
 
 export default function App() {
   return (
@@ -32,10 +35,18 @@ export default function App() {
           <Route path="/bebidas" element={<BebidasPage />} />
           <Route path="/bebidas/nova" element={<NovaBebidaPage />} />
           <Route path="/bebidas/:id" element={<BebidaDetalhePage />} />
+          <Route path="/bebidas/:id/editar" element={<NovaBebidaPage />} />
           <Route path="/mapa" element={<MapaPage />} />
           <Route path="/locais/:id" element={<LocalDetalhePage />} />
           <Route path="/meu-bar" element={<MeuBarPage />} />
           <Route path="/minhas-avaliacoes" element={<MinhasAvaliacoesPage />} />
+
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<Navigate to="/admin/metricas" replace />} />
+            <Route path="/admin/locais" element={<AdminLocaisPage />} />
+            <Route path="/admin/bebidas" element={<AdminBebidasPage />} />
+            <Route path="/admin/metricas" element={<AdminMetricasPage />} />
+          </Route>
         </Route>
       </Route>
 

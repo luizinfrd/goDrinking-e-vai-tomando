@@ -198,19 +198,49 @@ export function Estrelas({
   );
 }
 
-export function BarraSabor({ rotulo, valor, destaque = false }: { rotulo: string; valor: number; destaque?: boolean }) {
+const notaDeZeroADez = (valor: number) => String(Math.round(valor * 10)).padStart(2, '0');
+
+// barra do atributo; com "percebido", um marcador mostra a média de quem provou (B1)
+export function BarraSabor({
+  rotulo,
+  valor,
+  destaque = false,
+  percebido,
+}: {
+  rotulo: string;
+  valor: number;
+  destaque?: boolean;
+  percebido?: number | null;
+}) {
   const pct = Math.round(valor * 100);
+  const comparando = percebido !== undefined && percebido !== null;
   return (
     <div className="space-y-2">
-      <div className="flex items-end justify-between">
+      <div className="flex items-end justify-between gap-3">
         <span className="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant">{rotulo}</span>
-        <span className="font-headline-md text-headline-md text-primary">{String(Math.round(valor * 10)).padStart(2, '0')}</span>
+        <span className="flex items-baseline gap-3">
+          {comparando && (
+            <span className="text-xs text-on-surface-variant">
+              percebido <span className="font-bold text-on-surface">{notaDeZeroADez(percebido)}</span>
+            </span>
+          )}
+          <span className="font-headline-md text-headline-md text-primary">{notaDeZeroADez(valor)}</span>
+        </span>
       </div>
-      <div className="h-1 overflow-hidden rounded-full bg-surface-variant">
-        <div
-          className={`h-full rounded-full transition-all duration-700 ${destaque ? 'bg-primary shadow-[0_0_10px_#ffb876]' : 'bg-primary/60'}`}
-          style={{ width: `${pct}%` }}
-        />
+      <div className="relative">
+        <div className="h-1 overflow-hidden rounded-full bg-surface-variant">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ${destaque ? 'bg-primary shadow-[0_0_10px_#ffb876]' : 'bg-primary/60'}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        {comparando && (
+          <span
+            className="absolute top-1/2 h-3.5 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-on-surface shadow"
+            style={{ left: `${Math.round(percebido * 100)}%` }}
+            aria-hidden
+          />
+        )}
       </div>
     </div>
   );

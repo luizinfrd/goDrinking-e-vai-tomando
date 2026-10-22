@@ -2,9 +2,11 @@
 import { Link, useParams } from 'react-router-dom';
 import { Pagina } from '../components/Pagina';
 import { BebidaCard } from '../components/BebidaCard';
+import { BotaoCompartilhar } from '../components/BotaoCompartilhar';
 import { EstadoVazio, ErroBox, Icon, LocalImagem, Spinner, TipoTag } from '../components/ui';
 import { useFetch } from '../hooks/useFetch';
 import { api } from '../lib/api';
+import { formatarPreco } from '../lib/sabor';
 import type { LocalComBebidas } from '../lib/types';
 
 export default function LocalDetalhePage() {
@@ -41,7 +43,10 @@ export default function LocalDetalhePage() {
         </div>
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-primary/10 blur-[100px]" />
         <div className="relative pt-16 md:pt-32">
-          {local.tipo && <TipoTag>{local.tipo}</TipoTag>}
+          <div className="flex flex-wrap gap-2">
+            {local.tipo && <TipoTag>{local.tipo}</TipoTag>}
+            {local.faixaPreco && <TipoTag>{formatarPreco(local.faixaPreco)}</TipoTag>}
+          </div>
           <h1 className="mt-4 font-display-lg text-headline-lg-mobile md:text-display-lg">{local.nome}</h1>
           {local.descricao && <p className="mt-3 max-w-2xl text-on-surface-variant md:mt-4 md:font-body-lg md:text-body-lg">{local.descricao}</p>}
           <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-on-surface-variant">
@@ -55,6 +60,7 @@ export default function LocalDetalhePage() {
                 <Icon name="near_me" /> Como chegar
               </a>
             )}
+            <BotaoCompartilhar titulo={local.nome} texto={`${local.nome} no goDrinking`} caminho={`/locais/${local.id}`} />
           </div>
         </div>
       </header>

@@ -1,5 +1,5 @@
-// histórico do usuário (RF05) com edição e exclusão (RF16, RF17)
-import { useState } from 'react';
+// diário de degustação (B8): histórico do usuário (RF05) em linha do tempo, com edição e exclusão (RF16, RF17)
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Pagina } from '../components/Pagina';
 import { AvaliacaoForm } from '../components/AvaliacaoForm';
@@ -10,6 +10,18 @@ import { api, mensagemDeErro } from '../lib/api';
 import { formatarData } from '../lib/sabor';
 import type { Avaliacao } from '../lib/types';
 
+// agrupa por mês mantendo a ordem (a API já entrega da mais recente para a mais antiga)
+function porMes(avaliacoes: Avaliacao[]) {
+  const grupos: { mes: string; itens: Avaliacao[] }[] = [];
+  for (const a of avaliacoes) {
+    const mes = new Date(a.data).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const atual = grupos[grupos.length - 1];
+    if (atual?.mes === mes) atual.itens.push(a);
+    else grupos.push({ mes, itens: [a] });
+  }
+  return grupos;
+}
+
 export default function MinhasAvaliacoesPage() {
   const { refreshMe } = useAuth();
   const [editando, setEditando] = useState<string | null>(null);
@@ -19,6 +31,8 @@ export default function MinhasAvaliacoesPage() {
     (signal) => api<Avaliacao[]>('/avaliacoes/minhas', { signal }),
     []
   );
+
+  const meses = useMemo(() => porMes(avaliacoes ?? []), [avaliacoes]);
 
   async function excluir(a: Avaliacao) {
     if (!window.confirm(`Excluir sua avaliação de ${a.bebida?.nome}? Seu perfil de paladar será recalculado.`)) return;
@@ -33,7 +47,7 @@ export default function MinhasAvaliacoesPage() {
   }
 
   function aoSalvar(atualizada: Avaliacao) {
-    setDados((lista) => lista?.map((x) => (x.id === atualizada.id ? { ...x, ...atualizada, bebida: x.bebida } : x)) ?? null);
+    setDados((lista) => lista?.map((x) => (x.id === atualizada.id ? { ...x, ...atualizada, bebida: x.bebida, local: atualizada.local ?? x.local } : x)) ?? null);
     setEditando(null);
     refreshMe().catch(() => undefined);
   }
@@ -41,9 +55,10 @@ export default function MinhasAvaliacoesPage() {
   return (
     <Pagina>
       <span className="eyebrow">Histórico</span>
-      <h1 className="mt-3 font-display-lg text-headline-lg-mobile md:text-display-lg">Minhas avaliações</h1>
+      <h1 className="mt-3 font-display-lg text-headline-lg-mobile md:text-display-lg">Diário de degustação</h1>
       <p className="mt-3 max-w-2xl text-on-surface-variant md:mt-4">
-        Cada avaliação ajusta seu vetor de preferências. Editar ou excluir também recalcula suas recomendações.
+        Tudo o que você provou, mês a mês, com onde bebeu e a foto do momento. Cada avaliação ajusta seu vetor de preferências;
+        editar ou excluir também recalcula suas recomendações.
       </p>
 
       {erroAcao && <p className="mt-6 text-sm text-error">{erroAcao}</p>}
@@ -65,8 +80,17 @@ export default function MinhasAvaliacoesPage() {
             }
           />
         ) : (
-          <ul className="space-y-4">
-            {avaliacoes.map((a) => (
+          <div className="space-y-10">
+            {meses.map(({ mes, itens }) => (
+              <section key={mes} aria-label={mes}>
+                <h2 className="mb-4 flex items-center gap-3 font-display-lg text-headline-md capitalize text-primary">
+                  <Icon name="calendar_month" /> {mes}
+                  <span className="font-body-md text-sm normal-case text-outline">
+                    · {itens.length} {itens.length === 1 ? 'bebida' : 'bebidas'}
+                  </span>
+                </h2>
+                <ul className="space-y-4 border-l border-primary/20 pl-4 sm:pl-6">
+            {itens.map((a) => (
               <li key={a.id} className="glass-card overflow-hidden rounded-2xl">
                 <div className="flex items-start gap-4 p-4 sm:items-center sm:gap-5 sm:p-5">
                   <Link to={`/bebidas/${a.bebidaId}`} className="h-16 w-16 shrink-0 overflow-hidden rounded-xl sm:h-20 sm:w-20">
@@ -82,6 +106,20 @@ export default function MinhasAvaliacoesPage() {
                       <span className="uppercase tracking-widest">{a.bebida?.tipo}</span>
                     </div>
                     {a.comentario && <p className="mt-2 line-clamp-2 text-sm italic text-on-surface-variant sm:line-clamp-none sm:text-body-md">“{a.comentario}”</p>}
+                    {(a.local || a.fotoUrl) && (
+                      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
+                        {a.local && (
+                          <Link to={`/locais/${a.local.id}`} className="flex min-h-11 items-center gap-1 hover:text-primary">
+                            <Icon name="location_on" className="text-base text-primary" /> {a.local.nome}
+                          </Link>
+                        )}
+                        {a.fotoUrl && (
+                          <a href={a.fotoUrl} target="_blank" rel="noreferrer" className="block h-14 w-14 overflow-hidden rounded-lg border border-surface-variant/30">
+                            <img src={a.fotoUrl} alt={`Foto de ${a.bebida?.nome ?? 'bebida'}`} loading="lazy" className="h-full w-full object-cover" />
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="-my-1 -mr-2 flex shrink-0 flex-col sm:m-0 sm:flex-row sm:gap-2">
                     <button
@@ -107,7 +145,10 @@ export default function MinhasAvaliacoesPage() {
                 )}
               </li>
             ))}
-          </ul>
+                </ul>
+              </section>
+            ))}
+          </div>
         )}
       </div>
     </Pagina>

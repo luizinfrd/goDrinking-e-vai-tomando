@@ -12,8 +12,14 @@ const NAV_PRINCIPAL = [
 ];
 
 const NAV_SECUNDARIA = [
-  { to: '/minhas-avaliacoes', icone: 'history', rotulo: 'Minhas avaliações' },
+  { to: '/minhas-avaliacoes', icone: 'history', rotulo: 'Diário de degustação' },
   { to: '/bebidas/nova', icone: 'add_circle', rotulo: 'Cadastrar bebida' },
+];
+
+const NAV_ADMIN = [
+  { to: '/admin/locais', icone: 'storefront', rotulo: 'Locais' },
+  { to: '/admin/bebidas', icone: 'liquor', rotulo: 'Bebidas' },
+  { to: '/admin/metricas', icone: 'monitoring', rotulo: 'Métricas' },
 ];
 
 function iniciais(nome?: string) {
@@ -23,7 +29,7 @@ function iniciais(nome?: string) {
 }
 
 export function AppLayout() {
-  const { usuario, logout } = useAuth();
+  const { usuario, perfil, logout } = useAuth();
   const navigate = useNavigate();
 
   const sair = () => {
@@ -78,6 +84,18 @@ export function AppLayout() {
           ))}
         </div>
 
+        {perfil?.papel === 'admin' && (
+          <div className="flex flex-col gap-1 border-t border-surface-variant/10 pt-6">
+            <p className="px-4 pb-1 text-[11px] uppercase tracking-widest text-outline">Administração</p>
+            {NAV_ADMIN.map((item) => (
+              <NavLink key={item.to} to={item.to} end className={classeItem}>
+                <Icon name={item.icone} />
+                {item.rotulo}
+              </NavLink>
+            ))}
+          </div>
+        )}
+
         <button
           onClick={sair}
           className="mt-auto flex items-center gap-4 rounded-lg px-4 py-3 font-label-md text-label-md text-outline transition-colors hover:text-error"
@@ -96,7 +114,7 @@ export function AppLayout() {
           className={({ isActive }) =>
             `-mr-2 flex h-11 w-11 items-center justify-center rounded-full ${isActive ? 'text-primary' : 'text-on-surface-variant'}`
           }
-          aria-label="Minhas avaliações"
+          aria-label="Diário de degustação"
         >
           <Icon name="history" />
         </NavLink>
