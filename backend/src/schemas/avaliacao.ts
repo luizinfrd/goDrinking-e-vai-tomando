@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { id } from './comum';
+import { id, urlOpcional, vetorSabor } from './comum';
 
 const nota = z
   .number({ error: 'A nota deve ser um número inteiro entre 1 e 5' })
@@ -14,15 +14,23 @@ const comentario = z
   .nullish()
   .transform((v) => (v === undefined ? undefined : v || null));
 
+// opcionais: percepção dos atributos (B1) e diário de degustação (B8); null limpa o campo
+const camposOpcionais = {
+  comentario,
+  percepcao: vetorSabor.nullish(),
+  localId: id('localId').nullish(),
+  fotoUrl: urlOpcional('fotoUrl'),
+};
+
 export const criarAvaliacaoSchema = z.object({
   bebidaId: id('bebidaId'),
   nota,
-  comentario,
+  ...camposOpcionais,
 });
 
 export const atualizarAvaliacaoSchema = z.object({
   nota: nota.optional(),
-  comentario,
+  ...camposOpcionais,
 });
 
 export const minhasAvaliacoesSchema = z.object({ bebidaId: id('bebidaId').optional() });

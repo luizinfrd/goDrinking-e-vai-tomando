@@ -13,6 +13,21 @@ export const preferenciaRepository = {
     });
   },
 
+  // vetores de todos os outros usuários com algum paladar conhecido (componente colaborativo)
+  listarVetoresExceto(userId: string, db: Db = prisma) {
+    return db.userPreference.findMany({
+      where: {
+        userId: { not: userId },
+        OR: [{ onboardingConcluido: true }, { user: { avaliacoes: { some: {} } } }],
+      },
+      select: { userId: true, pesoDoce: true, pesoSeco: true, pesoCitrico: true, pesoEncorpado: true },
+    });
+  },
+
+  listarTodas(db: Db = prisma) {
+    return db.userPreference.findMany();
+  },
+
   salvarBase(userId: string, vetor: VetorSabor, db: Db = prisma) {
     const base = {
       baseDoce: vetor.doce,

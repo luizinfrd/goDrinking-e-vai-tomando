@@ -8,7 +8,7 @@ const router = Router();
 router.get('/', bebidaController.listar);
 router.get('/:id', bebidaController.buscarPorId);
 
-// rotas protegidas — exige autenticação
+// rotas protegidas — qualquer usuário sugere; editar/excluir só o autor da sugestão ou um admin
 router.post('/', authMiddleware, bebidaController.criar);
 router.put('/:id', authMiddleware, bebidaController.atualizar);
 router.delete('/:id', authMiddleware, bebidaController.deletar);

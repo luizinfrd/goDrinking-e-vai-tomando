@@ -38,3 +38,27 @@ export function vetorDePesos(p: { pesoDoce: number; pesoSeco: number; pesoCitric
 export function vetorBase(p: { baseDoce: number; baseSeco: number; baseCitrico: number; baseEncorpado: number }): VetorSabor {
   return { doce: p.baseDoce, seco: p.baseSeco, citrico: p.baseCitrico, encorpado: p.baseEncorpado };
 }
+
+type ColunasPercebidas = {
+  percebidoDoce: number | null;
+  percebidoSeco: number | null;
+  percebidoCitrico: number | null;
+  percebidoEncorpado: number | null;
+};
+
+// as quatro colunas andam juntas: ou a avaliação informou a percepção inteira, ou nenhuma
+export function vetorPercebido(a: ColunasPercebidas): VetorSabor | null {
+  if (a.percebidoDoce === null || a.percebidoSeco === null || a.percebidoCitrico === null || a.percebidoEncorpado === null) {
+    return null;
+  }
+  return { doce: a.percebidoDoce, seco: a.percebidoSeco, citrico: a.percebidoCitrico, encorpado: a.percebidoEncorpado };
+}
+
+export function colunasPercebidas(vetor: VetorSabor | null): ColunasPercebidas {
+  return {
+    percebidoDoce: vetor?.doce ?? null,
+    percebidoSeco: vetor?.seco ?? null,
+    percebidoCitrico: vetor?.citrico ?? null,
+    percebidoEncorpado: vetor?.encorpado ?? null,
+  };
+}

@@ -1,7 +1,7 @@
 // recálculo do vetor de preferências (RF24) e da nota média das bebidas
 import { Db, prisma } from '../lib/prisma';
-import { calcularVetorPreferencia } from '../domain/preferencia';
-import { arredondar, vetorBase, vetorDaBebida, VetorSabor } from '../domain/sabor';
+import { calcularVetorPreferencia, vetorDaAvaliacao } from '../domain/preferencia';
+import { arredondar, vetorBase, vetorDaBebida, vetorPercebido, VetorSabor } from '../domain/sabor';
 import { avaliacaoRepository } from '../repositories/avaliacaoRepository';
 import { bebidaRepository } from '../repositories/bebidaRepository';
 import { preferenciaRepository } from '../repositories/preferenciaRepository';
@@ -15,7 +15,7 @@ export const preferenciaService = {
     const avaliacoes = await avaliacaoRepository.listarParaVetor(userId, db);
     const vetor = calcularVetorPreferencia(
       preferencia.onboardingConcluido ? vetorBase(preferencia) : null,
-      avaliacoes.map((a) => ({ nota: a.nota, vetor: vetorDaBebida(a.bebida) }))
+      avaliacoes.map((a) => ({ nota: a.nota, vetor: vetorDaAvaliacao(vetorDaBebida(a.bebida), vetorPercebido(a)) }))
     );
     return preferenciaRepository.atualizarPesos(userId, vetor, db);
   },

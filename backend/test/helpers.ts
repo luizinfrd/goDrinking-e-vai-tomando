@@ -38,3 +38,7 @@ export async function criarBebida(token: string, dados: Record<string, unknown> 
 }
 
 export const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
+
+export async function tornarAdmin(userId: string) {
+  await prisma.user.update({ where: { id: userId }, data: { papel: 'admin' } });
+}

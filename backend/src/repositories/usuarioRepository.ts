@@ -1,6 +1,8 @@
 import { Db, prisma } from '../lib/prisma';
 
-const DADOS_PUBLICOS = { id: true, nome: true, email: true, dataCriacao: true } as const;
+const DADOS_PUBLICOS = { id: true, nome: true, email: true, dataCriacao: true, papel: true } as const;
+
+export const PAPEL_ADMIN = 'admin';
 
 export const usuarioRepository = {
   buscarPorEmail(email: string, db: Db = prisma) {
@@ -20,6 +22,11 @@ export const usuarioRepository = {
       where: { id },
       select: { ...DADOS_PUBLICOS, preferences: true },
     });
+  },
+
+  async ehAdmin(id: string, db: Db = prisma) {
+    const user = await db.user.findUnique({ where: { id }, select: { papel: true } });
+    return user?.papel === PAPEL_ADMIN;
   },
 
   atualizarNome(id: string, nome: string, db: Db = prisma) {

@@ -21,3 +21,8 @@ export function calcularVetorPreferencia(base: VetorSabor | null, avaliacoes: Av
   const divisor = n === 0 ? 1 : n;
   return criarVetor((d) => arredondar(soma[d] / divisor));
 }
+
+// o que a avaliação ensina sobre o paladar: a percepção do próprio usuário, se ele informou; senão, o catálogo
+export function vetorDaAvaliacao(declarado: VetorSabor, percebido: VetorSabor | null): VetorSabor {
+  return percebido ?? declarado;
+}

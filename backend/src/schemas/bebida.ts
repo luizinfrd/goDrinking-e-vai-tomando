@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { atributo, textoOpcional, texto, urlOpcional } from './comum';
+import { atributo, harmonizacao, textoOpcional, texto, urlOpcional } from './comum';
 
 const camposComuns = {
   nome: texto('Nome', 120),
@@ -9,6 +9,7 @@ const camposComuns = {
   atributoSeco: atributo('atributoSeco').optional(),
   atributoCitrico: atributo('atributoCitrico').optional(),
   atributoEncorpado: atributo('atributoEncorpado').optional(),
+  harmonizaCom: z.array(harmonizacao).max(7).optional(),
 };
 
 const camposDrink = {
@@ -43,6 +44,7 @@ export const atualizarBebidaSchema = z.object({
 export const listarBebidasSchema = z.object({
   tipo: z.string().trim().toLowerCase().optional(),
   nome: z.string().trim().optional(),
+  harmoniza: harmonizacao.optional().catch(undefined),
 });
 
 export type CriarBebida = z.infer<typeof criarBebidaSchema>;

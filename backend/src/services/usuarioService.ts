@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { NaoEncontradoError, seInexistente } from '../errors/AppError';
+import { calcularConquistas, LIMIAR_CITRICO } from '../domain/conquistas';
 import { vetorBase, vetorDePesos, VetorSabor } from '../domain/sabor';
 import { avaliacaoRepository } from '../repositories/avaliacaoRepository';
 import { bebidaRepository } from '../repositories/bebidaRepository';
@@ -9,10 +10,12 @@ import { preferenciaService } from './preferenciaService';
 export const usuarioService = {
   // dados do perfil + preferências + estatísticas para o "Meu Bar"
   async buscarPerfil(userId: string) {
-    const [user, estatisticas, porTipo] = await Promise.all([
+    const [user, estatisticas, porTipo, paraConquistas, totalCitricas] = await Promise.all([
       usuarioRepository.buscarComPreferencias(userId),
       avaliacaoRepository.estatisticasDoUsuario(userId),
       bebidaRepository.contagemPorTipoAvaliadaPor(userId),
+      avaliacaoRepository.listarParaConquistas(userId),
+      bebidaRepository.contarComAtributoCitricoMinimo(LIMIAR_CITRICO),
     ]);
     if (!user) {
       throw new NaoEncontradoError('Usuário não encontrado');
@@ -30,6 +33,7 @@ export const usuarioService = {
         drinks: porTipo.find((t) => t.tipo === 'drink')?._count._all ?? 0,
         vinhos: porTipo.find((t) => t.tipo === 'vinho')?._count._all ?? 0,
       },
+      conquistas: calcularConquistas(paraConquistas, totalCitricas),
     };
   },
 

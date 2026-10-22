@@ -13,6 +13,7 @@ export const localRepository = {
       where: {
         ...(filtros.tipo && { tipo: { equals: filtros.tipo, mode: 'insensitive' } }),
         ...(filtros.nome && { nome: { contains: filtros.nome, mode: 'insensitive' } }),
+        ...(filtros.faixaPrecoMax && { faixaPreco: { lte: filtros.faixaPrecoMax } }),
       },
       // inclui as bebidas para o popup do mapa
       include: { bebidas: { include: { bebida: { select: SELECAO_BEBIDA_RESUMO } } } },
@@ -56,9 +57,12 @@ export const localRepository = {
   },
 
   // locais que oferecem pelo menos uma das bebidas, trazendo só essas bebidas
-  comAlgumaDasBebidas(bebidaIds: string[], db: Db = prisma) {
+  comAlgumaDasBebidas(bebidaIds: string[], filtros: { faixaPrecoMax?: number } = {}, db: Db = prisma) {
     return db.local.findMany({
-      where: { bebidas: { some: { bebidaId: { in: bebidaIds } } } },
+      where: {
+        bebidas: { some: { bebidaId: { in: bebidaIds } } },
+        ...(filtros.faixaPrecoMax && { faixaPreco: { lte: filtros.faixaPrecoMax } }),
+      },
       include: {
         bebidas: {
           where: { bebidaId: { in: bebidaIds } },

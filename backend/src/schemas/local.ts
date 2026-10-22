@@ -14,14 +14,23 @@ const camposLocal = {
   imagemUrl: urlOpcional('imagemUrl'),
   latitude: coordenada('latitude', 90),
   longitude: coordenada('longitude', 180),
+  faixaPreco: z
+    .number({ error: 'faixaPreco deve ser um inteiro de 1 a 4' })
+    .int('faixaPreco deve ser um inteiro de 1 a 4')
+    .min(1, 'faixaPreco deve ser um inteiro de 1 a 4')
+    .max(4, 'faixaPreco deve ser um inteiro de 1 a 4')
+    .nullish(),
 };
 
 export const criarLocalSchema = z.object(camposLocal);
 export const atualizarLocalSchema = z.object(camposLocal).partial();
 
+export const faixaPrecoMax = z.coerce.number().int().min(1).max(4).optional().catch(undefined);
+
 export const listarLocaisSchema = z.object({
   tipo: z.string().trim().optional(),
   nome: z.string().trim().optional(),
+  faixaPrecoMax,
 });
 
 export const associarBebidaSchema = z.object({ bebidaId: id('bebidaId') });

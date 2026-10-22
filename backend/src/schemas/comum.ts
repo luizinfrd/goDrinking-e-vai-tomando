@@ -37,6 +37,19 @@ export const id = (rotulo: string) => z.uuid({ error: `${rotulo} inválido` });
 
 export const paramsComId = z.object({ id: id('id') });
 
+// pratos para harmonização (B6): lista fechada para o filtro funcionar
+export const HARMONIZACOES = [
+  'carnes-vermelhas',
+  'aves',
+  'peixes-frutos-do-mar',
+  'massas',
+  'queijos',
+  'sobremesas',
+  'petiscos',
+] as const;
+
+export const harmonizacao = z.enum(HARMONIZACOES, { error: 'Harmonização inválida' });
+
 export const vetorSabor = z.object({
   doce: atributo('doce'),
   seco: atributo('seco'),

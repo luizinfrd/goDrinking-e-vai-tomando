@@ -9,6 +9,7 @@ export const bebidaRepository = {
         ...(filtros.tipo && { tipo: { equals: filtros.tipo, mode: 'insensitive' } }),
         // busca parcial: "negr" encontra "Negroni"
         ...(filtros.nome && { nome: { contains: filtros.nome, mode: 'insensitive' } }),
+        ...(filtros.harmoniza && { harmonizaCom: { has: filtros.harmoniza } }),
       },
       include: { _count: { select: { avaliacoes: true } } },
       orderBy: [{ notaMedia: 'desc' }, { nome: 'asc' }],
@@ -55,11 +56,12 @@ export const bebidaRepository = {
   },
 
   // candidatas à recomendação: o que o usuário ainda não avaliou, com até 3 locais (cruzamento de dados)
-  candidatasParaRecomendacao(filtros: { excluirIds: string[]; tipo?: string }, db: Db = prisma) {
+  candidatasParaRecomendacao(filtros: { excluirIds: string[]; tipo?: string; harmoniza?: string }, db: Db = prisma) {
     return db.bebida.findMany({
       where: {
         id: { notIn: filtros.excluirIds },
         ...(filtros.tipo && { tipo: filtros.tipo }),
+        ...(filtros.harmoniza && { harmonizaCom: { has: filtros.harmoniza } }),
       },
       include: {
         locais: {
@@ -68,6 +70,16 @@ export const bebidaRepository = {
           include: { local: { select: { id: true, nome: true, endereco: true, tipo: true } } },
         },
       },
+    });
+  },
+
+  contarComAtributoCitricoMinimo(minimo: number, db: Db = prisma) {
+    return db.bebida.count({ where: { atributoCitrico: { gte: minimo } } });
+  },
+
+  listarVetores(db: Db = prisma) {
+    return db.bebida.findMany({
+      select: { id: true, notaMedia: true, atributoDoce: true, atributoSeco: true, atributoCitrico: true, atributoEncorpado: true },
     });
   },
 

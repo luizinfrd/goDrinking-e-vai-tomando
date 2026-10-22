@@ -10,6 +10,8 @@ import avaliacaoRoutes from './routes/avaliacaoRoutes';
 import recomendacaoRoutes from './routes/recomendacaoRoutes';
 import localRoutes from './routes/localRoutes';
 import usuarioRoutes from './routes/usuarioRoutes';
+import favoritoRoutes from './routes/favoritoRoutes';
+import adminRoutes from './routes/adminRoutes';
 
 export function criarApp() {
   const app = express();
@@ -23,6 +25,8 @@ export function criarApp() {
   app.use('/api/recomendacoes', recomendacaoRoutes);
   app.use('/api/locais', localRoutes);
   app.use('/api/usuarios', usuarioRoutes);
+  app.use('/api/favoritos', favoritoRoutes);
+  app.use('/api/admin', adminRoutes);
 
   // confere também o banco: a API sem banco não está saudável
   app.get('/health', async (_req, res) => {
