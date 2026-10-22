@@ -1,77 +1,33 @@
 import { Response } from 'express';
-import { AuthRequest } from '../middlewares/authMiddleware';
+import { AuthRequest, usuarioLogado } from '../middlewares/authMiddleware';
+import { atualizarAvaliacaoSchema, criarAvaliacaoSchema } from '../schemas/avaliacao';
+import { paramsComId } from '../schemas/comum';
 import { avaliacaoService } from '../services/avaliacaoService';
-import { responderErro } from '../utils/erros';
 
 export const avaliacaoController = {
   async criar(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user!.id;
-      const { bebidaId, nota, comentario } = req.body ?? {};
-
-      if (!bebidaId || nota === undefined || nota === null) {
-        res.status(400).json({ error: 'bebidaId e nota são obrigatórios' });
-        return;
-      }
-
-      const avaliacao = await avaliacaoService.criar(userId, {
-        bebidaId,
-        nota: Number(nota),
-        comentario,
-      });
-
-      res.status(201).json(avaliacao);
-    } catch (error) {
-      responderErro(res, error);
-    }
+    const dados = criarAvaliacaoSchema.parse(req.body ?? {});
+    res.status(201).json(await avaliacaoService.criar(usuarioLogado(req), dados));
   },
 
   async atualizar(req: AuthRequest, res: Response) {
-    try {
-      const id = req.params.id as string;
-      const userId = req.user!.id;
-      const { nota, comentario } = req.body ?? {};
-
-      const avaliacao = await avaliacaoService.atualizar(id, userId, {
-        ...(nota !== undefined && { nota: Number(nota) }),
-        ...(comentario !== undefined && { comentario }),
-      });
-
-      res.status(200).json(avaliacao);
-    } catch (error) {
-      responderErro(res, error);
-    }
+    const { id } = paramsComId.parse(req.params);
+    const dados = atualizarAvaliacaoSchema.parse(req.body ?? {});
+    res.status(200).json(await avaliacaoService.atualizar(id, usuarioLogado(req), dados));
   },
 
   async listarPorBebida(req: AuthRequest, res: Response) {
-    try {
-      const id = req.params.id as string;
-      const avaliacoes = await avaliacaoService.listarPorBebida(id);
-      res.status(200).json(avaliacoes);
-    } catch (error) {
-      responderErro(res, error);
-    }
+    const { id } = paramsComId.parse(req.params);
+    res.status(200).json(await avaliacaoService.listarPorBebida(id));
   },
 
   async listarPorUsuario(req: AuthRequest, res: Response) {
-    try {
-      const userId = req.user!.id;
-      const avaliacoes = await avaliacaoService.listarPorUsuario(userId);
-      res.status(200).json(avaliacoes);
-    } catch (error) {
-      responderErro(res, error);
-    }
+    res.status(200).json(await avaliacaoService.listarPorUsuario(usuarioLogado(req)));
   },
 
   async deletar(req: AuthRequest, res: Response) {
-    try {
-      const id = req.params.id as string;
-      const userId = req.user!.id;
-
-      await avaliacaoService.deletar(id, userId);
-      res.status(204).send();
-    } catch (error) {
-      responderErro(res, error);
-    }
+    const { id } = paramsComId.parse(req.params);
+    await avaliacaoService.deletar(id, usuarioLogado(req));
+    res.status(204).send();
   },
 };

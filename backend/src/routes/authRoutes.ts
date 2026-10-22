@@ -1,5 +1,3 @@
-// define o endpoint apos a requisição http
-
 import { Router } from 'express';
 import { authController } from '../controllers/authController';
 

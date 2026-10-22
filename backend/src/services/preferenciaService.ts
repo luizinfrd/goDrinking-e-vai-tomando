@@ -1,104 +1,45 @@
-// recálculo do vetor de preferências do usuário (RF24)
-import { Prisma } from '@prisma/client';
-import { prisma } from '../lib/prisma';
-
-type Cliente = Prisma.TransactionClient | typeof prisma;
-
-export type VetorSabor = {
-  doce: number;
-  seco: number;
-  citrico: number;
-  encorpado: number;
-};
-
-const arredondar = (v: number) => Math.round(v * 10000) / 10000;
+// recálculo do vetor de preferências (RF24) e da nota média das bebidas
+import { Db, prisma } from '../lib/prisma';
+import { calcularVetorPreferencia } from '../domain/preferencia';
+import { arredondar, vetorBase, vetorDaBebida, VetorSabor } from '../domain/sabor';
+import { avaliacaoRepository } from '../repositories/avaliacaoRepository';
+import { bebidaRepository } from '../repositories/bebidaRepository';
+import { preferenciaRepository } from '../repositories/preferenciaRepository';
 
 export const preferenciaService = {
-  /*
-   * média ponderada entre o vetor do onboarding (peso 1) e cada avaliação,
-   * onde o valor de cada avaliação = atributos da bebida × (nota / 5).
-   * é exatamente a fórmula novo_score = (score_atual × n + valor) / (n + 1)
-   * aplicada em sequência, mas recalculada do zero — assim editar ou
-   * excluir uma avaliação também deixa o vetor correto.
-   */
-  async recalcular(userId: string, cliente: Cliente = prisma) {
-    const preferencia = await cliente.userPreference.findUnique({ where: { userId } });
+  // deve rodar sempre que uma avaliação do usuário (ou uma bebida avaliada por ele) mudar, na mesma transação
+  async recalcular(userId: string, db: Db = prisma) {
+    const preferencia = await preferenciaRepository.buscar(userId, db);
     if (!preferencia) return null;
 
-    const avaliacoes = await cliente.avaliacao.findMany({
-      where: { userId },
-      select: {
-        nota: true,
-        bebida: {
-          select: { atributoDoce: true, atributoSeco: true, atributoCitrico: true, atributoEncorpado: true },
-        },
-      },
-    });
+    const avaliacoes = await avaliacaoRepository.listarParaVetor(userId, db);
+    const vetor = calcularVetorPreferencia(
+      preferencia.onboardingConcluido ? vetorBase(preferencia) : null,
+      avaliacoes.map((a) => ({ nota: a.nota, vetor: vetorDaBebida(a.bebida) }))
+    );
+    return preferenciaRepository.atualizarPesos(userId, vetor, db);
+  },
 
-    // sem onboarding o vetor base é zero e não entra na média
-    const pesoBase = preferencia.onboardingConcluido ? 1 : 0;
-    const soma = {
-      doce: preferencia.baseDoce * pesoBase,
-      seco: preferencia.baseSeco * pesoBase,
-      citrico: preferencia.baseCitrico * pesoBase,
-      encorpado: preferencia.baseEncorpado * pesoBase,
-    };
-
-    for (const { nota, bebida } of avaliacoes) {
-      const fator = nota / 5; // normaliza a nota para 0-1
-      soma.doce += bebida.atributoDoce * fator;
-      soma.seco += bebida.atributoSeco * fator;
-      soma.citrico += bebida.atributoCitrico * fator;
-      soma.encorpado += bebida.atributoEncorpado * fator;
+  async recalcularVarios(userIds: string[], db: Db = prisma) {
+    for (const userId of new Set(userIds)) {
+      await preferenciaService.recalcular(userId, db);
     }
-
-    const n = pesoBase + avaliacoes.length;
-    const divisor = n === 0 ? 1 : n;
-
-    return cliente.userPreference.update({
-      where: { userId },
-      data: {
-        pesoDoce: arredondar(soma.doce / divisor),
-        pesoSeco: arredondar(soma.seco / divisor),
-        pesoCitrico: arredondar(soma.citrico / divisor),
-        pesoEncorpado: arredondar(soma.encorpado / divisor),
-      },
-    });
   },
 
   // grava as respostas do onboarding como vetor base e recalcula (RF03)
   async salvarOnboarding(userId: string, vetor: VetorSabor) {
     return prisma.$transaction(async (tx) => {
-      await tx.userPreference.upsert({
-        where: { userId },
-        create: {
-          userId,
-          baseDoce: vetor.doce,
-          baseSeco: vetor.seco,
-          baseCitrico: vetor.citrico,
-          baseEncorpado: vetor.encorpado,
-          onboardingConcluido: true,
-        },
-        update: {
-          baseDoce: vetor.doce,
-          baseSeco: vetor.seco,
-          baseCitrico: vetor.citrico,
-          baseEncorpado: vetor.encorpado,
-          onboardingConcluido: true,
-        },
-      });
+      await preferenciaRepository.salvarBase(userId, vetor, tx);
       return preferenciaService.recalcular(userId, tx);
     });
   },
 
-  // nota média da bebida recalculada a partir das avaliações existentes
-  async recalcularNotaMedia(bebidaId: string, cliente: Cliente = prisma) {
-    const { _avg } = await cliente.avaliacao.aggregate({
-      where: { bebidaId },
-      _avg: { nota: true },
-    });
-    const notaMedia = Math.round((_avg.nota ?? 0) * 100) / 100;
-    await cliente.bebida.update({ where: { id: bebidaId }, data: { notaMedia } });
-    return notaMedia;
+  // nota média recalculada a partir das avaliações existentes (bebida sem avaliação fica com 0)
+  async recalcularNotasMedias(bebidaIds: string[], db: Db = prisma) {
+    const ids = [...new Set(bebidaIds)];
+    const medias = await avaliacaoRepository.mediasDasNotas(ids, db);
+    for (const id of ids) {
+      await bebidaRepository.atualizarNotaMedia(id, arredondar(medias.get(id) ?? 0, 2), db);
+    }
   },
 };

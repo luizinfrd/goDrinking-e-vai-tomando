@@ -1,102 +1,70 @@
-import { Prisma } from '@prisma/client';
+import { Bebida } from '@prisma/client';
 import { prisma } from '../lib/prisma';
-import { erros } from '../utils/erros';
+import { NaoEncontradoError, seInexistente, ValidacaoError } from '../errors/AppError';
+import { AtualizarBebida, CriarBebida, FiltrosBebida } from '../schemas/bebida';
+import { avaliacaoRepository } from '../repositories/avaliacaoRepository';
+import { bebidaRepository } from '../repositories/bebidaRepository';
+import { preferenciaService } from './preferenciaService';
 
-export { isErroDeValidacao } from '../utils/erros';
+const CAMPOS_EXCLUSIVOS = {
+  drink: ['tipoVinho', 'uva', 'paisOrigem'],
+  vinho: ['baseAlcoolica', 'ingredientes'],
+} as const;
 
-export type DadosBebida = {
-    nome?: string;
-    tipo?: string;
-    descricao?: string | null;
-    imagemUrl?: string | null;
-    atributoDoce?: number;
-    atributoSeco?: number;
-    atributoCitrico?: number;
-    atributoEncorpado?: number;
-    criadoUser?: boolean;
+const ATRIBUTOS = ['atributoDoce', 'atributoSeco', 'atributoCitrico', 'atributoEncorpado'] as const;
 
-    tipoVinho?: string | null;
-    uva?: string | null;
-    paisOrigem?: string | null;
-
-    ingredientes?: string | null;
-    baseAlcoolica?: string | null;
-};
+// um vinho não recebe campos de drink e vice-versa
+function validarCamposDoTipo(bebida: Bebida, dados: AtualizarBebida) {
+  const proibidos = CAMPOS_EXCLUSIVOS[bebida.tipo as keyof typeof CAMPOS_EXCLUSIVOS] ?? [];
+  const invalido = proibidos.find((campo) => dados[campo] !== undefined);
+  if (invalido) {
+    throw new ValidacaoError(`O campo ${invalido} não se aplica a ${bebida.tipo === 'vinho' ? 'vinhos' : 'drinks'}`);
+  }
+}
 
 export const bebidaService = {
-    async listar(tipo?: string, nome?: string){
-        return prisma.bebida.findMany({
-            where: {
-                ...(tipo && { tipo: { equals: tipo.toLowerCase(), mode: 'insensitive'}}),
-                // busca parcial: "negr" encontra "Negroni"
-                ...(nome && { nome: { contains: nome, mode: 'insensitive'}}),
-            },
+  async listar(filtros: FiltrosBebida) {
+    return bebidaRepository.listar(filtros);
+  },
 
-            include: { _count: { select: { avaliacoes: true } } },
-            orderBy: [{notaMedia: 'desc'}, {nome: 'asc'}],
-        });
-    },
+  async buscarPorId(id: string) {
+    const bebida = await bebidaRepository.buscarDetalhe(id);
+    if (!bebida) {
+      throw new NaoEncontradoError('Bebida não encontrada');
+    }
+    return bebida;
+  },
 
-    async buscarPorId(id: string) {
-        const bebida = await prisma.bebida.findUnique({
-            where: { id },
-            include: {
-                avaliacoes: {
-                    orderBy: { data: 'desc'},
-                    take: 10, //limita os resultados em 10 registros
-                    include: { user: { select: { id: true, nome: true } } },
-                },
-                locais: {
-                    include: { local: true },
-                },
-                _count: { select: { avaliacoes: true } },
-            },
-        });
+  async criar(dados: CriarBebida) {
+    return bebidaRepository.criar({ ...dados, criadoUser: true });
+  },
 
-        if (!bebida) {
-            throw erros.naoEncontrado('Bebida não encontrada');
-        }
+  async atualizar(id: string, dados: AtualizarBebida) {
+    const bebida = await bebidaRepository.buscarPorId(id);
+    if (!bebida) {
+      throw new NaoEncontradoError('Bebida não encontrada');
+    }
+    validarCamposDoTipo(bebida, dados);
 
-        return bebida;
-    },
+    const { tipo: _tipo, ...campos } = dados;
+    const mudouSabor = ATRIBUTOS.some((a) => campos[a] !== undefined && campos[a] !== bebida[a]);
 
-    async criar(dados: DadosBebida & { nome: string; tipo: string }) {
-        const tipo = dados.tipo.toLowerCase();
+    return prisma.$transaction(async (tx) => {
+      const atualizada = await bebidaRepository.atualizar(id, campos, tx);
+      // o vetor de quem avaliou depende dos atributos da bebida
+      if (mudouSabor) {
+        await preferenciaService.recalcularVarios(await avaliacaoRepository.idsDosAutores(id, tx), tx);
+      }
+      return atualizada;
+    });
+  },
 
-        if (tipo !== 'vinho' && tipo !== 'drink'){
-            throw erros.validacao('Tipo deve ser "vinho" ou "drink"');
-        }
-
-        if (tipo === 'vinho' && !dados.tipoVinho){
-            throw erros.validacao('Campo tipoVinho é obrigatório para vinhos');
-        }
-
-        if (tipo === 'drink' && !dados.baseAlcoolica){
-            throw erros.validacao('Campo baseAlcoolica é obrigatório para drinks');
-        }
-
-        return prisma.bebida.create({ data: { ...dados, tipo } as Prisma.BebidaCreateInput });
-    },
-
-    async atualizar(id:  string, dados: DadosBebida) {
-        const bebida = await prisma.bebida.findUnique({ where: { id } });
-
-        if(!bebida) {
-            throw erros.naoEncontrado('Bebida não encontrada');
-        }
-
-        // o tipo não muda depois de criado (os campos específicos dependem dele)
-        const { tipo, ...resto } = dados;
-        return prisma.bebida.update({ where: { id }, data: resto as Prisma.BebidaUpdateInput });
-    },
-
-    async deletar(id: string) {
-        const bebida = await prisma.bebida.findUnique({ where: { id }});
-
-        if (!bebida) {
-            throw erros.naoEncontrado('Bebida não encontrada');
-        }
-
-        return prisma.bebida.delete({ where: { id }});
-    },
+  async deletar(id: string) {
+    await prisma.$transaction(async (tx) => {
+      const autores = await avaliacaoRepository.idsDosAutores(id, tx);
+      await seInexistente(bebidaRepository.excluir(id, tx), 'Bebida não encontrada');
+      // as avaliações caem em cascade; o vetor de quem avaliou precisa esquecer a bebida
+      await preferenciaService.recalcularVarios(autores, tx);
+    });
+  },
 };

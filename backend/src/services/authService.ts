@@ -1,69 +1,33 @@
-// lógica de negócio (hash, comparar senha, gerar token)
-
+// lógica de negócio da autenticação (hash, comparar senha, gerar token)
 import bcrypt from 'bcrypt';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { prisma } from '../lib/prisma';
-import { getJwtExpiresIn, getJwtSecret } from '../utils/jwt';
+import { env } from '../config/env';
+import { NaoAutorizadoError, seDuplicado } from '../errors/AppError';
+import { usuarioRepository } from '../repositories/usuarioRepository';
 
 const SALT_ROUNDS = 10;
 
+// hash fixo para comparar quando o e-mail não existe: o tempo de resposta não revela contas cadastradas
+const HASH_FICTICIO = bcrypt.hashSync('senha-que-nunca-confere', SALT_ROUNDS);
+
 export const authService = {
-    async register(nome: string, email: string, senha: string){
-        const userExistente = await prisma.user.findUnique({ where: {email} });
+  async register(nome: string, email: string, senha: string) {
+    const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
+    return seDuplicado(usuarioRepository.criar({ nome, email, senhaHash }), 'Email já cadastrado');
+  },
 
-        if(userExistente) {
-            throw new Error('Email já cadastrado');
-        }
+  async login(email: string, senha: string) {
+    const user = await usuarioRepository.buscarPorEmail(email);
+    const senhaCorreta = await bcrypt.compare(senha, user?.senha ?? HASH_FICTICIO);
+    if (!user || !senhaCorreta) {
+      throw new NaoAutorizadoError('Credenciais inválidas');
+    }
 
-        // gera o hash da senha
-        const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
+    const token = jwt.sign({ id: user.id, email: user.email }, env.JWT_SECRET, {
+      algorithm: 'HS256',
+      expiresIn: env.JWT_EXPIRES_IN as SignOptions['expiresIn'],
+    });
 
-        //cria o usuário e suas preferências (zeradas até o onboarding)
-        const user = await prisma.user.create({
-            data: {
-                nome,
-                email,
-                senha: senhaHash,
-                preferences: {
-                    create: {
-                        pesoDoce: 0,
-                        pesoSeco: 0,
-                        pesoCitrico: 0,
-                        pesoEncorpado: 0,
-                    },
-                },
-            },
-
-            select: {id: true, nome: true, email: true, dataCriacao: true},
-        });
-
-        return user;
-    },
-
-    async login(email: string, senha: string){
-        //busca o usuário pelo email
-        const user = await prisma.user.findUnique({ where: { email } });
-
-        if(!user) {
-            throw new Error('Credenciais inválidas');
-        }
-
-        //compara a senha com o hashcode criado
-        const senhaCorreta = await bcrypt.compare(senha, user.senha);
-        if(!senhaCorreta) {
-            throw new Error('Credenciais inválidas');
-        }
-
-        // token jwt
-        const token = jwt.sign(
-            { id: user.id, email: user.email },
-            getJwtSecret(),
-            { expiresIn: getJwtExpiresIn() as SignOptions['expiresIn'] }
-        );
-
-        return {
-            token,
-            user: { id: user.id, nome: user.nome, email:user.email },
-        };
-    },
+    return { token, user: { id: user.id, nome: user.nome, email: user.email } };
+  },
 };

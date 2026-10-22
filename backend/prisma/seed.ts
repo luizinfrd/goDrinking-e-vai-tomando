@@ -327,7 +327,7 @@ async function main() {
       create: { userId: demo.id, bebidaId, nota: a.nota, comentario: a.comentario },
       update: { nota: a.nota, comentario: a.comentario },
     });
-    await preferenciaService.recalcularNotaMedia(bebidaId);
+    await preferenciaService.recalcularNotasMedias([bebidaId]);
   }
   await preferenciaService.recalcular(demo.id);
 

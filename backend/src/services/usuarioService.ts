@@ -1,45 +1,29 @@
 import { prisma } from '../lib/prisma';
-import { erros } from '../utils/erros';
-import { preferenciaService, VetorSabor } from './preferenciaService';
+import { NaoEncontradoError, seInexistente } from '../errors/AppError';
+import { vetorBase, vetorDePesos, VetorSabor } from '../domain/sabor';
+import { avaliacaoRepository } from '../repositories/avaliacaoRepository';
+import { bebidaRepository } from '../repositories/bebidaRepository';
+import { usuarioRepository } from '../repositories/usuarioRepository';
+import { preferenciaService } from './preferenciaService';
 
 export const usuarioService = {
   // dados do perfil + preferências + estatísticas para o "Meu Bar"
   async buscarPerfil(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, nome: true, email: true, dataCriacao: true, preferences: true },
-    });
+    const [user, estatisticas, porTipo] = await Promise.all([
+      usuarioRepository.buscarComPreferencias(userId),
+      avaliacaoRepository.estatisticasDoUsuario(userId),
+      bebidaRepository.contagemPorTipoAvaliadaPor(userId),
+    ]);
     if (!user) {
-      throw erros.naoEncontrado('Usuário não encontrado');
+      throw new NaoEncontradoError('Usuário não encontrado');
     }
-
-    const estatisticas = await prisma.avaliacao.aggregate({
-      where: { userId },
-      _count: { _all: true },
-      _avg: { nota: true },
-    });
-    const porTipo = await prisma.bebida.groupBy({
-      by: ['tipo'],
-      where: { avaliacoes: { some: { userId } } },
-      _count: { _all: true },
-    });
 
     const { preferences, ...dados } = user;
     return {
       ...dados,
       onboardingConcluido: preferences?.onboardingConcluido ?? false,
-      preferencias: preferences && {
-        doce: preferences.pesoDoce,
-        seco: preferences.pesoSeco,
-        citrico: preferences.pesoCitrico,
-        encorpado: preferences.pesoEncorpado,
-      },
-      preferenciasBase: preferences && {
-        doce: preferences.baseDoce,
-        seco: preferences.baseSeco,
-        citrico: preferences.baseCitrico,
-        encorpado: preferences.baseEncorpado,
-      },
+      preferencias: preferences && vetorDePesos(preferences),
+      preferenciasBase: preferences && vetorBase(preferences),
       estatisticas: {
         totalAvaliacoes: estatisticas._count._all,
         mediaNotas: Math.round((estatisticas._avg.nota ?? 0) * 10) / 10,
@@ -50,11 +34,7 @@ export const usuarioService = {
   },
 
   async atualizarPerfil(userId: string, nome: string) {
-    return prisma.user.update({
-      where: { id: userId },
-      data: { nome },
-      select: { id: true, nome: true, email: true },
-    });
+    return seInexistente(usuarioRepository.atualizarNome(userId, nome), 'Usuário não encontrado');
   },
 
   async salvarPreferencias(userId: string, vetor: VetorSabor) {
@@ -64,12 +44,10 @@ export const usuarioService = {
 
   // exclusão definitiva (RF06 / LGPD): avaliações e preferências caem em cascade
   async excluirConta(userId: string) {
-    const avaliacoes = await prisma.avaliacao.findMany({ where: { userId }, select: { bebidaId: true } });
     await prisma.$transaction(async (tx) => {
-      await tx.user.delete({ where: { id: userId } });
-      for (const { bebidaId } of avaliacoes) {
-        await preferenciaService.recalcularNotaMedia(bebidaId, tx);
-      }
+      const bebidasAvaliadas = await avaliacaoRepository.idsDeBebidasAvaliadas(userId, tx);
+      await seInexistente(usuarioRepository.excluir(userId, tx), 'Usuário não encontrado');
+      await preferenciaService.recalcularNotasMedias(bebidasAvaliadas, tx);
     });
   },
 };
